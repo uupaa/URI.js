@@ -5,6 +5,8 @@ var test = new Test().add([
         testURIIsRelative,
         testURINormalize,
         testURIQueryString,
+        testEncodeURIComponent,
+        testDecodeURIComponent,
     ]);
 
 if (this.document) {
@@ -148,6 +150,36 @@ function testURIQueryString(next) {
         next && next.pass();
     } else {
         console.log("testURIQueryString ng");
+        next && next.miss();
+    }
+}
+
+function testEncodeURIComponent(next) {
+
+    var source = "123ABCあいう!%#";
+    var code   = encodeURIComponent(source);
+    var revert = decodeURIComponent(code);
+
+    if (source === revert) {
+        console.log("testEncodeURIComponent ok");
+        next && next.pass();
+    } else {
+        console.log("testEncodeURIComponent ok");
+        next && next.miss();
+    }
+}
+
+function testDecodeURIComponent(next) {
+
+    var source = "123ABCあいう!%#";
+    var code   = encodeURIComponent(source);
+    var revert = decodeURIComponent(code);
+
+    if (source === revert) {
+        console.log("testDecodeURIComponent ok");
+        next && next.pass();
+    } else {
+        console.log("testDecodeURIComponent ok");
         next && next.miss();
     }
 }
