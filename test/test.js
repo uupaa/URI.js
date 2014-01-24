@@ -14,7 +14,12 @@ if (this.document) {
     ]);
 }
 
-test.run();
+test.run().worker(function(err, test) {
+        if (!err) {
+            URI = URI_;
+            new Test(test).run().worker();
+        }
+    });
 
 function testURIGetCurrentURI(next) {
 

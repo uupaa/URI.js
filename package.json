@@ -1,22 +1,26 @@
 {
   "name":           "uupaa.uri.js",
-  "version":        "0.8.0",
+  "version":        "0.8.1",
   "description":    "URI parse and build.",
   "url":            "https://github.com/uupaa/URI.js",
   "keywords":       ["URL", "URI", "util", "uupaa"],
-  "author":         "uupaa <uupaa.js@gmail.com>",
-  "license":        "MIT",
-  "repository":     { "type": "git", "url": "https://github.com/uupaa/URI.js.git" },
-  "contributors":   [],
+  "repository": {
+    "type":         "git",
+    "url":          "https://github.com/uupaa/URI.js.git"
+  },
+  "scripts": {
+    "start":        "node node_modules/uupaa.minify.js --keep --output ./lib/URI.min.js ./lib/URI.js",
+    "test":         "NODE_ENV=production NODE_PATH=lib node --harmony test/index.node.js; open test/index.html"
+  },
   "devDependencies": {
-    "uupaa.help.js": ">= 0.8.0",
-    "uupaa.test.js": ">= 0.8.0",
-    "uupaa.task.js": ">= 0.8.0"
+    "uupaa.help.js":    "",
+    "uupaa.test.js":    "",
+    "uupaa.task.js":    "",
+    "uupaa.minify.js":  ""
   },
   "lib":            "./lib/",
-  "main":           "index.js",
-  "scripts": {
-    "start":        "npm install",
-    "test":         "NODE_ENV=production NODE_PATH=lib node --harmony test/index.node.js; open test/index.html"
-  }
+  "main":           "./index.js",
+  "author":         "uupaa <uupaa.js@gmail.com>",
+  "license":        "MIT",
+  "contributors":   []
 }

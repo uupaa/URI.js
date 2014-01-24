@@ -20,3 +20,14 @@ $ npm install
 ```sh
 $ npm test
 ```
+
+# Minify
+
+```sh
+$ npm start
+
+  or
+
+$ node node_modules/uupaa.minify.js --keep --output ./lib/URI.min.js ./lib/URI.js
+```
+
