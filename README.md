@@ -10,6 +10,8 @@ https://github.com/uupaa/URI.js/wiki/URI
 # Install, Setup modules
 
 ```sh
+$ brew install closure-compiler
+
 $ git clone git@github.com:uupaa/URI.js.git
 $ cd URI.js
 $ npm install

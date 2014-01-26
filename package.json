@@ -1,6 +1,6 @@
 {
   "name":           "uupaa.uri.js",
-  "version":        "0.8.2",
+  "version":        "0.8.3",
   "description":    "URI parse and build.",
   "url":            "https://github.com/uupaa/URI.js",
   "keywords":       ["URL", "URI", "util", "uupaa"],

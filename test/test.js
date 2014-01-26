@@ -17,7 +17,7 @@ if (this.document) {
 }
 
 test.run().worker(function(err, test) {
-        if (!err) {
+        if (!err && typeof URI_ !== "undefined") {
             URI = URI_;
             new Test(test).run().worker();
         }
