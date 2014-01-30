@@ -12,7 +12,10 @@
     "start":        "node node_modules/uupaa.minify.js --keep --output ./lib/URI.min.js ./lib/URI.js",
     "test":         "NODE_ENV=production NODE_PATH=lib node --harmony test/index.node.js; open test/index.html"
   },
+  "dependencies": {
+  },
   "devDependencies": {
+    "uupaa.mappedarray.js": "",
     "uupaa.help.js":    "",
     "uupaa.test.js":    "",
     "uupaa.task.js":    "",
