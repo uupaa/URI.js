@@ -1,6 +1,6 @@
 {
   "name":           "uupaa.uri.js",
-  "version":        "0.8.4",
+  "version":        "0.8.5",
   "description":    "URI parse and build.",
   "url":            "https://github.com/uupaa/URI.js",
   "keywords":       ["URL", "URI", "util", "uupaa"],
@@ -15,7 +15,6 @@
   "dependencies": {
   },
   "devDependencies": {
-    "uupaa.mappedarray.js": "",
     "uupaa.help.js":    "",
     "uupaa.test.js":    "",
     "uupaa.task.js":    "",

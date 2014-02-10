@@ -17,9 +17,12 @@ if (this.document) {
 }
 
 test.run().worker(function(err, test) {
-        if (!err && typeof URI_ !== "undefined") {
-            URI = URI_;
-            new Test(test).run().worker();
+        if (!err) {
+            var undo = Test.swap(URI, URI_);
+
+            new Test(test).run(function(err, test) {
+                undo = Test.undo(undo);
+            });
         }
     });
 
