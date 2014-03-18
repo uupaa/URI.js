@@ -16,12 +16,16 @@ if (this.document) {
     ]);
 }
 
-test.run().worker(function(err, test) {
-        if (!err) {
-            var undo = Test.swap(URI, URI_);
+test.run(function(err, test) {
+        if (1) {
+            err || test.worker(function(err, test) {
+                if (!err && typeof URI_ !== "undefined") {
+                    var name = Test.swap(URI, URI_);
 
-            new Test(test).run(function(err, test) {
-                undo = Test.undo(undo);
+                    new Test(test).run(function(err, test) {
+                        Test.undo(name);
+                    });
+                }
             });
         }
     });
