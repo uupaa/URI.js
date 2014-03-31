@@ -16,48 +16,48 @@ __report = {
           "complexity": {
             "sloc": {
               "physical": 388,
-              "logical": 214
+              "logical": 216
             },
-            "cyclomatic": 74,
+            "cyclomatic": 76,
             "halstead": {
               "operators": {
                 "distinct": 32,
-                "total": 643,
+                "total": 648,
                 "identifiers": [
                   "__stripped__"
                 ]
               },
               "operands": {
-                "distinct": 209,
-                "total": 789,
+                "distinct": 210,
+                "total": 794,
                 "identifiers": [
                   "__stripped__"
                 ]
               },
-              "length": 1432,
-              "vocabulary": 241,
-              "difficulty": 60.40191387559808,
-              "volume": 11331.257529481305,
-              "effort": 684429.6413979521,
-              "bugs": 3.777085843160435,
-              "time": 38023.868966552895
+              "length": 1442,
+              "vocabulary": 242,
+              "difficulty": 60.49523809523809,
+              "volume": 11419.000788149966,
+              "effort": 690795.1714888436,
+              "bugs": 3.8063335960499884,
+              "time": 38377.50952715798
             },
             "params": 22
           }
         },
         "module": "lib/URI.js",
-        "maintainability": 58.87048868065786
+        "maintainability": 58.77276128365533
       }
     }
   ],
   "summary": {
     "total": {
       "sloc": 388,
-      "maintainability": 58.87048868065786
+      "maintainability": 58.77276128365533
     },
     "average": {
       "sloc": 388,
-      "maintainability": "58.87"
+      "maintainability": "58.77"
     }
   }
 }

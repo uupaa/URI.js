@@ -297,11 +297,31 @@ function testURIResolve(next) {
 }
 
 function testURINormalize(next) {
-    var url = "http://example.com///..//hoge/....//huga.ext";
-    var answer = "http://example.com/hoge/huga.ext";
-    var result = URI.normalize(url);
+    var items = {
+            // url                      result
+            "dir/.../a.file":           "dir/a.file",
+            "/dir/.../a.file":          "/dir/a.file",
+            "../../../../a.file":       "/a.file",
+            "dir/dir2///.//.../a.file": "dir/dir2/a.file",
+            "dir/.../a.file":           "dir/a.file",
+            "../../../../a.file":       "/a.file",
+            "http://example.com/../../../../a.file":        "http://example.com/a.file",
+            "http://example.com/././//./.../a.file":        "http://example.com/a.file",
+            "http://example.com///..//hoge/....//huga.ext": "http://example.com/hoge/huga.ext"
+        };
 
-    if (result === answer) {
+    var ok = true;
+
+    for (var url in items) {
+        var result = items[url];
+        if (URI.normalize(url) !== result) {
+            console.error("url = " + url, "normalize = ", URI.normalize(url), "result = ", result);
+            ok = false;
+            break;
+        }
+    }
+
+    if (ok) {
         console.log("testURINormalize ok");
         next && next.pass();
     } else {
