@@ -5,7 +5,12 @@ URI parse and build.
 
 # API Document
 
-https://github.com/uupaa/URI.js/wiki/URI
+- https://github.com/uupaa/URI.js/wiki/URI
+
+and
+
+- https://github.com/uupaa/WebModule and [slide](http://uupaa.github.io/Slide/slide/WebModule/index.html)
+- https://github.com/uupaa/Help.js and [slide](http://uupaa.github.io/Slide/slide/Help.js/index.html)
 
 # Install, Setup modules
 

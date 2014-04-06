@@ -46,7 +46,11 @@ function testURIGetCurrentURI(next) {
     var url = URI(); // get current URI
     var obj = URI.parse(url);
 
-    if (obj.dir.split("/").pop() === "test" && obj.file === "index.html") {
+    // location.href is "URI.js/test/"
+    //               or "URI.js/test/index.html"
+
+    if (obj.dir.split("/").pop() === "test" && (obj.file === "" ||
+                                                obj.file === "index.html")) {
         console.log("testURI ok");
         next && next.pass();
     } else {

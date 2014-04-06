@@ -1,6 +1,6 @@
 {
   "name":           "uupaa.uri.js",
-  "version":        "0.8.8",
+  "version":        "0.8.9",
   "description":    "URI parse and build.",
   "url":            "https://github.com/uupaa/URI.js",
   "keywords":       ["URL", "URI", "util", "uupaa", "WebModule"],
@@ -18,11 +18,12 @@
   },
   "x-build": {
     "inputs":       ["lib/URI.js"],
-    "output":       "lib/URI.min.js"
+    "output":       "release/URI.min.js"
   },
   "dependencies": {
   },
   "devDependencies": {
+    "uupaa.console.js": "",
     "uupaa.valid.js":   "",
     "uupaa.help.js":    "",
     "uupaa.task.js":    "",
