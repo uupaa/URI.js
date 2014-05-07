@@ -1,10 +1,17 @@
-(function(global) {
+var ModuleTestURI = (function(global) {
 
-var _inNode = "process" in global;
-var _inWorker = "WorkerLocation" in global;
-var _inBrowser = "self" in global;
+var _inNode    = "process"        in global;
+var _inWorker  = "WorkerLocation" in global;
+var _inBrowser = "document"       in global;
 
-var test = new Test().add([
+var test = new Test("URI", {
+        disable:    false,
+        browser:    true,
+        worker:     true,
+        node:       true,
+        button:     true,
+        both:       true,
+    }).add([
         testURIParse,
         testURIParse2,
         testURIParse3,
@@ -27,19 +34,8 @@ if (!_inWorker && _inBrowser) {
     ]);
 }
 
-test.run(function(err, test) {
-        if (1) {
-            err || test.worker(function(err, test) {
-                if (!err && typeof URI_ !== "undefined") {
-                    var name = Test.swap(URI, URI_);
+test.run().clone();
 
-                    new Test(test).run(function(err, test) {
-                        Test.undo(name);
-                    });
-                }
-            });
-        }
-    });
 
 function testURIGetCurrentURI(next) {
 
@@ -51,10 +47,8 @@ function testURIGetCurrentURI(next) {
 
     if (obj.dir.split("/").pop() === "test" && (obj.file === "" ||
                                                 obj.file === "index.html")) {
-        console.log("testURI ok");
         next && next.pass();
     } else {
-        console.error("testURI ng");
         next && next.miss();
     }
 }
@@ -82,10 +76,8 @@ function testURIParse(next) {
         obj.fragment === "#fragment" &&
         obj.error    === false) {
 
-        console.log("testURIParse ok");
         next && next.pass();
     } else {
-        console.error("testURIParse ng");
         next && next.miss();
     }
 }
@@ -113,10 +105,8 @@ function testURIParse2(next) {
         obj.fragment === "#fragment" &&
         obj.error    === false) {
 
-        console.log("testURIParse2 ok");
         next && next.pass();
     } else {
-        console.error("testURIParse2 ng");
         next && next.miss();
     }
 }
@@ -144,10 +134,8 @@ function testURIParse3(next) {
         obj.fragment === "#fragment" &&
         obj.error    === false) {
 
-        console.log("testURIParse3 ok");
         next && next.pass();
     } else {
-        console.error("testURIParse3 ng");
         next && next.miss();
     }
 }
@@ -175,10 +163,8 @@ function testURIParse4(next) {
         obj.fragment === "#fragment" &&
         obj.error    === false) {
 
-        console.log("testURIParse4 ok");
         next && next.pass();
     } else {
-        console.error("testURIParse4 ng");
         next && next.miss();
     }
 }
@@ -206,10 +192,8 @@ function testURIParse5(next) {
         obj.fragment === "#fragment" &&
         obj.error    === false) {
 
-        console.log("testURIParse5 ok");
         next && next.pass();
     } else {
-        console.error("testURIParse5 ng");
         next && next.miss();
     }
 }
@@ -235,10 +219,8 @@ function testURIParse6(next) {
         obj.fragment === "" &&
         obj.error    === false) {
 
-        console.log("testURIParse6 ok");
         next && next.pass();
     } else {
-        console.error("testURIParse6 ng");
         next && next.miss();
     }
 }
@@ -251,10 +233,8 @@ function testURIParseAndBuild(next) {
     var result1 = URI.build(urlObject1) === absurl; // URI.build
 
     if (result1) {
-        console.log("testURIParseAndBuild ok");
         next && next.pass();
     } else {
-        console.error("testURIParseAndBuild ng");
         next && next.miss();
     }
 }
@@ -263,10 +243,8 @@ function testURIIsAbsolute(next) {
     var url = "http://example.com";
 
     if ( URI.isAbsolute(url) === true) {
-        console.log("testURIIsAbsolute ok");
         next && next.pass();
     } else {
-        console.error("testURIIsAbsolute ng");
         next && next.miss();
     }
 }
@@ -275,10 +253,8 @@ function testURIIsRelative(next) {
     var url = "/dir/file.ext";
 
     if ( URI.isRelative(url) === true) {
-        console.log("testURIIsRelative ok");
         next && next.pass();
     } else {
-        console.error("testURIIsRelative ng");
         next && next.miss();
     }
 }
@@ -292,10 +268,8 @@ function testURIResolve(next) {
         obj.dir      === "/dir" &&
         obj.file     === "file.ext") {
 
-        console.log("testURIResolve ok");
         next && next.pass();
     } else {
-        console.error("testURIResolve ng");
         next && next.miss();
     }
 }
@@ -326,10 +300,8 @@ function testURINormalize(next) {
     }
 
     if (ok) {
-        console.log("testURINormalize ok");
         next && next.pass();
     } else {
-        console.error("testURINormalize ng");
         next && next.miss();
     }
 }
@@ -342,10 +314,8 @@ function testURIQueryString(next) {
     var result = JSON.stringify( urlQueryObject );
 
     if (result === '{"key1":"a","key2":"b","key3":["0","1"]}') {
-        console.log("testURIQueryString ok");
         next && next.pass();
     } else {
-        console.error("testURIQueryString ng");
         next && next.miss();
     }
 }
@@ -357,10 +327,8 @@ function testEncodeURIComponent(next) {
     var revert = decodeURIComponent(code);
 
     if (source === revert) {
-        console.log("testEncodeURIComponent ok");
         next && next.pass();
     } else {
-        console.error("testEncodeURIComponent ok");
         next && next.miss();
     }
 }
@@ -372,10 +340,8 @@ function testDecodeURIComponent(next) {
     var revert = decodeURIComponent(code);
 
     if (source === revert) {
-        console.log("testDecodeURIComponent ok");
         next && next.pass();
     } else {
-        console.error("testDecodeURIComponent ok");
         next && next.miss();
     }
 }
