@@ -1,9 +1,9 @@
 {
   "name":           "uupaa.uri.js",
-  "version":        "0.8.14",
+  "version":        "0.8.15",
   "description":    "URI parse and build.",
   "url":            "https://github.com/uupaa/URI.js",
-  "keywords":       ["URL", "URI", "util", "uupaa", "WebModule"],
+  "keywords":       ["URL", "URI", "util", "uupaa", "WebModule", "Stable"],
   "repository": {
     "type":         "git",
     "url":          "https://github.com/uupaa/URI.js.git"
@@ -24,6 +24,7 @@
     "files":        ["lib/URI.js"],
     "output":       "release/URI.min.js",
     "target":       ["all"],
+    "labels":       ["@dev"],
     "module": {
       "develop":    ["uupaa.valid.js"],
       "release":    []
@@ -33,6 +34,7 @@
   },
   "devDependencies": {
     "uupaa.nodemodule.js": "",
+    "uupaa.reflection.js": "",
     "uupaa.console.js": "",
     "uupaa.valid.js":   "",
     "uupaa.help.js":    "",
