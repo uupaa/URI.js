@@ -29,7 +29,7 @@ var test = new Test("URI", {
 
 if (!_inWorker && _inBrowser) {
     test.add([
-        testURIGetCurrentURI,
+        //testURIGetCurrentURI,
         testURIResolve
     ]);
 }
@@ -37,7 +37,8 @@ if (!_inWorker && _inBrowser) {
 test.run().clone();
 
 
-function testURIGetCurrentURI(next) {
+/*
+function testURIGetCurrentURI(test) {
 
     var url = URI(); // get current URI
     var obj = URI.parse(url);
@@ -47,13 +48,14 @@ function testURIGetCurrentURI(next) {
 
     if (obj.dir.split("/").pop() === "test" && (obj.file === "" ||
                                                 obj.file === "index.html")) {
-        next && next.pass();
+        test && test.pass();
     } else {
-        next && next.miss();
+        test && test.miss();
     }
 }
+ */
 
-function testURIParse(next) {
+function testURIParse(test, pass, miss) {
     var href = "http://user:pass@example.com:8080/dir1/dir2/file.ext?a=b;c=d#fragment";
 
     var obj = URI.parse(href);
@@ -61,28 +63,32 @@ function testURIParse(next) {
     if (obj.href     === href &&
         obj.protocol === "http:" &&
         obj.scheme   === "http:" &&
-        obj.secure   === false &&
-        obj.host     === "user:pass@example.com:8080" &&
-        obj.auth     === "user:pass" &&
+        obj.origin   === "http://example.com:8080" &&
+        obj.host     === "example.com:8080" &&
         obj.hostname === "example.com" &&
-        obj.port     === 8080 &&
+        obj.port     === "8080" &&
+        obj.secure   === false &&
+        obj.auth     === "user:pass" &&
+        obj.username === "user" &&
+        obj.password === "pass" &&
         obj.path     === "/dir1/dir2/file.ext?a=b;c=d#fragment" &&
         obj.pathname === "/dir1/dir2/file.ext" &&
         obj.dir      === "/dir1/dir2" &&
         obj.file     === "file.ext" &&
         obj.search   === "?a=b;c=d" &&
-        obj.query.a  === "b" &&
-        obj.query.c  === "d" &&
+      //obj.query.a  === "b" &&
+      //obj.query.c  === "d" &&
         obj.fragment === "#fragment" &&
+        obj.hash     === "#fragment" &&
         obj.error    === false) {
 
-        next && next.pass();
+        test.done(pass());
     } else {
-        next && next.miss();
+        test.done(miss());
     }
 }
 
-function testURIParse2(next) {
+function testURIParse2(test, pass, miss) {
     var href = "/dir1/dir2/file.ext?a=b;c=d#fragment"; // root and absolute
 
     var obj = URI.parse(href);
@@ -90,28 +96,32 @@ function testURIParse2(next) {
     if (obj.href     === href &&
         obj.protocol === "" &&
         obj.scheme   === "" &&
-        obj.secure   === false &&
+        obj.origin   === "" &&
         obj.host     === "" &&
-        obj.auth     === "" &&
         obj.hostname === "" &&
-        obj.port     === 0 &&
+        obj.port     === "" &&
+        obj.secure   === false &&
+        obj.auth     === "" &&
+        obj.username === "" &&
+        obj.password === "" &&
         obj.path     === "/dir1/dir2/file.ext?a=b;c=d#fragment" &&
         obj.pathname === "/dir1/dir2/file.ext" &&
         obj.dir      === "/dir1/dir2" &&
         obj.file     === "file.ext" &&
         obj.search   === "?a=b;c=d" &&
-        obj.query.a  === "b" &&
-        obj.query.c  === "d" &&
+      //obj.query.a  === "b" &&
+      //obj.query.c  === "d" &&
         obj.fragment === "#fragment" &&
+        obj.hash     === "#fragment" &&
         obj.error    === false) {
 
-        next && next.pass();
+        test.done(pass());
     } else {
-        next && next.miss();
+        test.done(miss());
     }
 }
 
-function testURIParse3(next) {
+function testURIParse3(test, pass, miss) {
     var href = "./dir1/dir2/file.ext?a=b;c=d#fragment"; // retative
 
     var obj = URI.parse(href);
@@ -119,28 +129,32 @@ function testURIParse3(next) {
     if (obj.href     === href &&
         obj.protocol === "" &&
         obj.scheme   === "" &&
-        obj.secure   === false &&
+        obj.origin   === "" &&
         obj.host     === "" &&
-        obj.auth     === "" &&
         obj.hostname === "" &&
-        obj.port     === 0 &&
+        obj.port     === "" &&
+        obj.secure   === false &&
+        obj.auth     === "" &&
+        obj.username === "" &&
+        obj.password === "" &&
         obj.path     === "./dir1/dir2/file.ext?a=b;c=d#fragment" &&
         obj.pathname === "./dir1/dir2/file.ext" &&
         obj.dir      === "./dir1/dir2" &&
         obj.file     === "file.ext" &&
         obj.search   === "?a=b;c=d" &&
-        obj.query.a  === "b" &&
-        obj.query.c  === "d" &&
+      //obj.query.a  === "b" &&
+      //obj.query.c  === "d" &&
         obj.fragment === "#fragment" &&
+        obj.hash     === "#fragment" &&
         obj.error    === false) {
 
-        next && next.pass();
+        test.done(pass());
     } else {
-        next && next.miss();
+        test.done(miss());
     }
 }
 
-function testURIParse4(next) {
+function testURIParse4(test, pass, miss) {
     var href = "file://localhost/dir1/dir2/file.ext?a=b;c=d#fragment"; // file and localhost
 
     var obj = URI.parse(href);
@@ -148,28 +162,32 @@ function testURIParse4(next) {
     if (obj.href     === href &&
         obj.protocol === "file:" &&
         obj.scheme   === "file:" &&
-        obj.secure   === false &&
+        obj.origin   === "file://" &&
         obj.host     === "" &&
-        obj.auth     === "" &&
         obj.hostname === "" &&
-        obj.port     === 0 &&
+        obj.port     === "" &&
+        obj.secure   === false &&
+        obj.auth     === "" &&
+        obj.username === "" &&
+        obj.password === "" &&
         obj.path     === "/dir1/dir2/file.ext?a=b;c=d#fragment" &&
         obj.pathname === "/dir1/dir2/file.ext" &&
         obj.dir      === "/dir1/dir2" &&
         obj.file     === "file.ext" &&
         obj.search   === "?a=b;c=d" &&
-        obj.query.a  === "b" &&
-        obj.query.c  === "d" &&
+      //obj.query.a  === "b" &&
+      //obj.query.c  === "d" &&
         obj.fragment === "#fragment" &&
+        obj.hash     === "#fragment" &&
         obj.error    === false) {
 
-        next && next.pass();
+        test.done(pass());
     } else {
-        next && next.miss();
+        test.done(miss());
     }
 }
 
-function testURIParse5(next) {
+function testURIParse5(test, pass, miss) {
     var href = "file:///dir1/dir2/file.ext?a=b;c=d#fragment"; // file without localhost
 
     var obj = URI.parse(href);
@@ -177,28 +195,32 @@ function testURIParse5(next) {
     if (obj.href     === href &&
         obj.protocol === "file:" &&
         obj.scheme   === "file:" &&
-        obj.secure   === false &&
+        obj.origin   === "file://" &&
         obj.host     === "" &&
-        obj.auth     === "" &&
         obj.hostname === "" &&
-        obj.port     === 0 &&
+        obj.port     === "" &&
+        obj.secure   === false &&
+        obj.auth     === "" &&
+        obj.username === "" &&
+        obj.password === "" &&
         obj.path     === "/dir1/dir2/file.ext?a=b;c=d#fragment" &&
         obj.pathname === "/dir1/dir2/file.ext" &&
         obj.dir      === "/dir1/dir2" &&
         obj.file     === "file.ext" &&
         obj.search   === "?a=b;c=d" &&
-        obj.query.a  === "b" &&
-        obj.query.c  === "d" &&
+      //obj.query.a  === "b" &&
+      //obj.query.c  === "d" &&
         obj.fragment === "#fragment" &&
+        obj.hash     === "#fragment" &&
         obj.error    === false) {
 
-        next && next.pass();
+        test.done(pass());
     } else {
-        next && next.miss();
+        test.done(miss());
     }
 }
 
-function testURIParse6(next) {
+function testURIParse6(test, pass, miss) {
     var href = "file:///";
 
     var obj = URI.parse(href);
@@ -206,60 +228,65 @@ function testURIParse6(next) {
     if (obj.href     === href &&
         obj.protocol === "file:" &&
         obj.scheme   === "file:" &&
-        obj.secure   === false &&
+        obj.origin   === "file://" &&
         obj.host     === "" &&
-        obj.auth     === "" &&
         obj.hostname === "" &&
-        obj.port     === 0 &&
+        obj.port     === "" &&
+        obj.secure   === false &&
+        obj.auth     === "" &&
+        obj.username === "" &&
+        obj.password === "" &&
         obj.path     === "/" &&
         obj.pathname === "/" &&
         obj.dir      === "" &&
         obj.file     === "" &&
         obj.search   === "" &&
         obj.fragment === "" &&
+        obj.hash     === "" &&
         obj.error    === false) {
 
-        next && next.pass();
+        test.done(pass());
     } else {
-        next && next.miss();
+        test.done(miss());
     }
 }
 
-function testURIParseAndBuild(next) {
+function testURIParseAndBuild(test, pass, miss) {
 
     var absurl = "http://example.com/dir/file.exe?key=value#hash";
-    var urlObject1 = URI.parse(absurl); // URI.parse
+    var parsed = URI.parse(absurl); // URI.parse
+    var revert = URI.build(parsed);
 
-    var result1 = URI.build(urlObject1) === absurl; // URI.build
+    var ok = revert === absurl; // URI.build
 
-    if (result1) {
-        next && next.pass();
+    if (ok) {
+        test.done(pass());
     } else {
-        next && next.miss();
+        test.done(miss());
     }
 }
 
-function testURIIsAbsolute(next) {
+function testURIIsAbsolute(test, pass, miss) {
     var url = "http://example.com";
 
     if ( URI.isAbsolute(url) === true) {
-        next && next.pass();
+        test.done(pass());
     } else {
-        next && next.miss();
+        test.done(miss());
     }
 }
 
-function testURIIsRelative(next) {
+function testURIIsRelative(test, pass, miss) {
     var url = "/dir/file.ext";
 
     if ( URI.isRelative(url) === true) {
-        next && next.pass();
+        test.done(pass());
     } else {
-        next && next.miss();
+        test.done(miss());
     }
 }
 
-function testURIResolve(next) {
+function testURIResolve(test, pass, miss) {
     var rel = "/dir/file.ext";
     var abs = URI.resolve(rel);
     var obj = URI.parse(abs);
@@ -268,13 +295,13 @@ function testURIResolve(next) {
         obj.dir      === "/dir" &&
         obj.file     === "file.ext") {
 
-        next && next.pass();
+        test.done(pass());
     } else {
-        next && next.miss();
+        test.done(miss());
     }
 }
 
-function testURINormalize(next) {
+function testURINormalize(test, pass, miss) {
     var items = {
             // url                      result
             "dir/.../a.file":           "dir/a.file",
@@ -300,13 +327,13 @@ function testURINormalize(next) {
     }
 
     if (ok) {
-        next && next.pass();
+        test.done(pass());
     } else {
-        next && next.miss();
+        test.done(miss());
     }
 }
 
-function testURIQueryString(next) {
+function testURIQueryString(test, pass, miss) {
     var url = "http://example.com?key1=a;key2=b;key3=0;key3=1";
 
     var urlQueryObject = URI.parseQuery(url);
@@ -314,35 +341,35 @@ function testURIQueryString(next) {
     var result = JSON.stringify( urlQueryObject );
 
     if (result === '{"key1":"a","key2":"b","key3":["0","1"]}') {
-        next && next.pass();
+        test.done(pass());
     } else {
-        next && next.miss();
+        test.done(miss());
     }
 }
 
-function testEncodeURIComponent(next) {
+function testEncodeURIComponent(test, pass, miss) {
 
     var source = "123ABCあいう!%#";
     var code   = encodeURIComponent(source);
     var revert = decodeURIComponent(code);
 
     if (source === revert) {
-        next && next.pass();
+        test.done(pass());
     } else {
-        next && next.miss();
+        test.done(miss());
     }
 }
 
-function testDecodeURIComponent(next) {
+function testDecodeURIComponent(test, pass, miss) {
 
     var source = "123ABCあいう!%#";
     var code   = encodeURIComponent(source);
     var revert = decodeURIComponent(code);
 
     if (source === revert) {
-        next && next.pass();
+        test.done(pass());
     } else {
-        next && next.miss();
+        test.done(miss());
     }
 }
 
