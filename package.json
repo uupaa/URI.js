@@ -1,6 +1,6 @@
 {
   "name":           "uupaa.uri.js",
-  "version":        "0.9.0",
+  "version":        "0.9.1",
   "description":    "URI parse and build.",
   "url":            "https://github.com/uupaa/URI.js",
   "keywords":       ["URL", "URI", "util", "uupaa", "WebModule", "Stable"],
@@ -21,7 +21,7 @@
     "lint":         "node node_modules/uupaa.plato.js; open lint/plato/index.html"
   },
   "x-build": {
-    "files":        ["lib/URI.js"],
+    "source":       ["lib/URI.js"],
     "output":       "release/URI.min.js",
     "target":       ["all"],
     "labels":       ["@dev"],
