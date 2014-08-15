@@ -13,3 +13,8 @@ URI parse and build.
 - [URI.js wiki](https://github.com/uupaa/URI.js/wiki/URI)
 
 
+# URI.js was deprecated
+
+Use the newer WebModule [WMURL.js](https://github.com/uupaa/WMURI.js).
+
+
