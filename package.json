@@ -1,52 +1,57 @@
 {
-  "name":           "uupaa.uri.js",
-  "version":        "0.9.3",
-  "description":    "URI parse and build.",
-  "url":            "https://github.com/uupaa/URI.js",
-  "keywords":       ["DEPRECATED", "URL", "URI", "util", "uupaa", "WebModule", "Stable"],
+  "name": "uupaa.uri.js",
+  "version": "0.9.4",
+  "description": "",
+  "url": "https://github.com/uupaa/URI.js",
+  "keywords": ["uupaa", "WebModule", "Unstable"],
   "repository": {
-    "type":         "git",
-    "url":          "https://github.com/uupaa/URI.js.git"
+    "type": "git",
+    "url": "https://github.com/uupaa/URI.js.git"
   },
   "scripts": {
-    "watch":        "node node_modules/uupaa.watch.js --verbose --action build",
-    "build":        "node node_modules/uupaa.minify.js --verbose --strict --keep --pretty",
-    "build-simple": "node node_modules/uupaa.minify.js --verbose --strict --keep --pretty --nowrap --simple",
-    "build-release":"node node_modules/uupaa.minify.js --verbose --strict --module",
-    "test":         "npm run test-node; npm run test-browser",
-    "test-page":    "node node_modules/uupaa.test.js/bin/TestPage.js --verbose",
-    "test-debug":   "NODE_ENV=production NODE_PATH=lib node --debug-brk --harmony test/index.node.js",
-    "test-node":    "NODE_ENV=production NODE_PATH=lib node --harmony test/index.node.js",
-    "test-browser": "open test/index.html",
-    "lint":         "node node_modules/uupaa.plato.js; open lint/plato/index.html"
+    "sync": "node ../WebModule/run/sync.js; npm update; node ../WebModule/run/page.js",
+    "min": "node ../WebModule/run/minify.js --verbose --strict --keep --pretty",
+    "build": "node ../WebModule/run/minify.js --verbose --strict --keep --release",
+    "watch": "node ../WebModule/run/watch.js --verbose --run hint",
+    "page": "node ../WebModule/run/page.js --verbose",
+    "test": "npm run min; npm run node; npm run browser",
+    "node": "NODE_ENV=production NODE_PATH=lib node --harmony test/node.js",
+    "noded": "NODE_ENV=production NODE_PATH=lib node --debug-brk --harmony test/node.js",
+    "browser": "open http://localhost:8000/URI.js/test/index.html",
+    "sim": "node ../WebModule/run/sim.js http://localhost:8000/URI.js/test/index.html",
+    "simx": "node ../WebModule/run/sim.js stop",
+    "hint": "jshint lib/*.js",
+    "score": "node ../WebModule/run/score.js; open lint/plato/index.html",
+    "patch": "node ../WebModule/run/patch.js",
+    "setup": "node ../WebModule/run/setup.js",
+    "start": "cd ../; Python -m SimpleHTTPServer 8000 &",
+    "stop": "killall -- Python -m SimpleHTTPServer 8000; exit 0"
   },
-  "x-build": {
-    "source":       ["lib/URI.js"],
-    "output":       "release/URI.min.js",
-    "target":       ["all"],
-    "labels":       ["@dev"],
-    "module": {
-      "develop":    ["uupaa.valid.js"],
-      "release":    []
+  "webmodule": {
+    "develop": false,
+    "label": ["@dev"],
+    "browser": {
+      "source": ["lib/URI.js"],
+      "output": "release/URI.b.min.js"
+    },
+    "worker": {
+      "source": ["lib/URI.js"],
+      "output": "release/URI.w.min.js"
+    },
+    "node": {
+      "source": ["lib/URI.js"],
+      "output": "release/URI.n.min.js"
+    },
+    "nw": {
+      "source": ["lib/URI.js"],
+      "output": "release/URI.nw.min.js"
     }
   },
-  "dependencies": {
-  },
-  "devDependencies": {
-    "uupaa.nodemodule.js": "",
-    "uupaa.reflection.js": "",
-    "uupaa.console.js": "",
-    "uupaa.valid.js":   "",
-    "uupaa.help.js":    "",
-    "uupaa.task.js":    "",
-    "uupaa.test.js":    "",
-    "uupaa.watch.js":   "",
-    "uupaa.plato.js":   "",
-    "uupaa.minify.js":  ""
-  },
-  "lib":            "./lib/",
-  "main":           "./index.js",
-  "author":         "uupaa <uupaa.js@gmail.com>",
-  "license":        "MIT",
-  "contributors":   []
+  "dependencies": {},
+  "devDependencies": {},
+  "lib": "./lib/",
+  "main": "./index.js",
+  "author": "uupaa",
+  "license": "MIT",
+  "contributors": []
 }
