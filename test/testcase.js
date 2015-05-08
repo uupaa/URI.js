@@ -36,6 +36,7 @@ var test = new Test("URI", {
         testDecodeURIComponent,
         testURICacheBustring,
         testURIMatch,
+        testURI_isBlob,
     ]);
 
 /*
@@ -552,6 +553,22 @@ function testValidRegisterTypes(test, pass, miss) {
     }
     test.done(miss());
     return;
+}
+
+function testURI_isBlob(test, pass, miss) {
+    var blobURL1 = "blob:https://example.org/9115d58c-bcda-ff47-86e5-083e9a215304";
+    var blobURL2 = "blob:https://example.org/9115d58c-bcda-ff47-86e5-083e9a215304#hello";
+    var notBlobURL1 = "";
+    var notBlobURL2 = "blob:";
+
+    if ( URI.isBlob(blobURL1) &&
+         URI.isBlob(blobURL2) &&
+         !URI.isBlob(notBlobURL1) &&
+         !URI.isBlob(notBlobURL2) ) {
+        test.done(pass());
+    } else {
+        test.done(miss());
+    }
 }
 
 return test.run().clone();
