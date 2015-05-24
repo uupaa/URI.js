@@ -1,10 +1,6 @@
 var ModuleTestURI = (function(global) {
 
-var _isNodeOrNodeWebKit = !!global.global;
-var _runOnNodeWebKit =  _isNodeOrNodeWebKit &&  /native/.test(setTimeout);
-var _runOnNode       =  _isNodeOrNodeWebKit && !/native/.test(setTimeout);
-var _runOnWorker     = !_isNodeOrNodeWebKit && "WorkerLocation" in global;
-var _runOnBrowser    = !_isNodeOrNodeWebKit && "document" in global;
+global["BENCHMARK"] = false;
 
 var test = new Test("URI", {
         disable:    false, // disable all tests.
@@ -15,6 +11,10 @@ var test = new Test("URI", {
         button:     true,  // show button.
         both:       true,  // test the primary and secondary modules.
         ignoreError:false, // ignore error.
+        callback:   function() {
+        },
+        errorback:  function(error) {
+        }
     }).add([
         testURIParse,
         testURIParse2,
@@ -39,8 +39,22 @@ var test = new Test("URI", {
         testURI_isBlob,
     ]);
 
+if (IN_BROWSER || IN_NW) {
+    test.add([
+        // browser and node-webkit test
+    ]);
+} else if (IN_WORKER) {
+    test.add([
+        // worker test
+    ]);
+} else if (IN_NODE) {
+    test.add([
+        // node.js and io.js test
+    ]);
+}
+
 /*
-if (!_runOnWorker && _runOnBrowser) {
+if (!IN_WORKER && IN_BROWSER) {
     test.add([
         //testURIGetCurrentURI,
     ]);
@@ -53,8 +67,7 @@ if (global["Valid"]) {
     ]);
 }
 
-
-
+// --- test cases ------------------------------------------
 /*
 function testURIGetCurrentURI(test) {
 
@@ -343,7 +356,7 @@ function testURIResolveAbsolute(test, pass, miss) {
 function testURIResolveWithoutBasePath(test, pass, miss) {
     var src = "/dir/file.ext";
 
-    if (_runOnNode || _runOnWorker) {
+    if (IN_NODE || IN_WORKER) {
         var abs = URI.resolve(src);
 
         if (abs === src) {
@@ -351,7 +364,7 @@ function testURIResolveWithoutBasePath(test, pass, miss) {
         } else {
             test.done(miss());
         }
-    } else if (_runOnBrowser) {
+    } else if (IN_BROWSER || IN_NW) {
         var abs = URI.resolve(src);
         var obj = URI.parse(abs);
 
@@ -571,7 +584,8 @@ function testURI_isBlob(test, pass, miss) {
     }
 }
 
-return test.run().clone();
 
-})((this || 0).self || global);
+return test.run();
+
+})(GLOBAL);
 
