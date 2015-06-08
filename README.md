@@ -1,24 +1,20 @@
-# URI.js [![Build Status](https://travis-ci.org/uupaa/URI.js.png)](http://travis-ci.org/uupaa/URI.js)
+# URI.js [![Build Status](https://travis-ci.org/uupaa/URI.js.svg)](https://travis-ci.org/uupaa/URI.js)
 
-[![npm](https://nodei.co/npm/uupaa.uri.js.png?downloads=true&stars=true)](https://nodei.co/npm/uupaa.uri.js/)
+[![npm](https://nodei.co/npm/uupaa.uri.js.svg?downloads=true&stars=true)](https://nodei.co/npm/uupaa.uri.js/)
 
 URL parse and build.
 
-## Document
 
-- [URI.js wiki](https://github.com/uupaa/URI.js/wiki/URI)
-- [WebModule](https://github.com/uupaa/WebModule)
-    - [Slide](http://uupaa.github.io/Slide/slide/WebModule/index.html)
-    - [Development](https://github.com/uupaa/WebModule/wiki/Development)
+- URI.js made of [WebModule](https://github.com/uupaa/WebModule).
+- [Spec](https://github.com/uupaa/URI.js/wiki/URI)
 
-## Run on
-
-### Browser and node-webkit
+## Browser and NW.js(node-webkit)
 
 ```js
-<script src="lib/URI.js"></script>
+<script src="<module-dir>/lib/WebModule.js"></script>
+<script src="<module-dir>/lib/URI.js"></script>
 <script>
-var urlObject = URI("http://user:pass@example.com:8080/dir1/dir2/file.ext?a=b;c=d#hash");
+var urlObject = WebModule.URI("http://user:pass@example.com:8080/dir1/dir2/file.ext?a=b;c=d#hash");
 
 // urlObject = {
 //     href:       "http://user:pass@example.com:8080/dir1/dir2/file.ext?a=b;c=d#hash",
@@ -43,17 +39,19 @@ var urlObject = URI("http://user:pass@example.com:8080/dir1/dir2/file.ext?a=b;c=
 </script>
 ```
 
-### WebWorkers
+## WebWorkers
 
 ```js
-importScripts("lib/URI.js");
+importScripts("<module-dir>lib/WebModule.js");
+importScripts("<module-dir>lib/URI.js");
 
 ```
 
-### Node.js
+## Node.js
 
 ```js
-require("lib/URI.js");
+require("<module-dir>lib/WebModule.js");
+require("<module-dir>lib/URI.js");
 
 ```
 
