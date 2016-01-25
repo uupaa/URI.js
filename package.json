@@ -1,7 +1,7 @@
 {
   "name": "uupaa.uri.js",
-  "version": "0.9.7",
-  "description": "",
+  "version": "0.9.9",
+  "description": "URL parse and build.",
   "url": "https://github.com/uupaa/URI.js",
   "keywords": ["URL", "URI", "uupaa", "WebModule", "Unstable"],
   "repository": {

@@ -17,7 +17,7 @@ This module made of [WebModule](https://github.com/uupaa/WebModule).
 <script src="<module-dir>/lib/WebModule.js"></script>
 <script src="<module-dir>/lib/URI.js"></script>
 <script>
-var urlObject = URI("http://user:pass@example.com:8080/dir1/dir2/file.ext?a=b;c=d#hash");
+var urlObject = WebModule.URI("http://user:pass@example.com:8080/dir1/dir2/file.ext?a=b;c=d#hash");
 
 // urlObject = {
 //     href:       "http://user:pass@example.com:8080/dir1/dir2/file.ext?a=b;c=d#hash",
