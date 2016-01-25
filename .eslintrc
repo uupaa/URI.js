@@ -6,7 +6,7 @@
     "globals": {
         "modules":          false,
         "BENCHMARK":        false,
-        "IN_NODE_OR_NW":    false,
+        "IN_EL":            false,
         "IN_BROWSER":       false,
         "IN_WORKER":        false,
         "IN_NODE":          false,
@@ -15,7 +15,9 @@
         "$keys":            false,
         "$some":            false,
         "$args":            false,
-        "$valid":           false
+        "$valid":           false,
+        "unescape":         false,
+        "escape":           false
     },
     "rules": {
         "strict":           [0],

@@ -20,6 +20,18 @@ var IGNORE_KEYWORDS = [
         "String.prototype.help",
         "Function.prototype.help",
         "MediaError",
+        "webkitOfflineAudioContext",    // OfflineAudioContext
+        "webkitAudioContext",           // AudioContext
+        "webkitIDBTransaction",         // IDBTransaction
+        "webkitIDBRequest",             // IDBRequest
+        "webkitIDBObjectStore",         // IDBObjectStore
+        "webkitIDBKeyRange",            // IDBKeyRange
+        "webkitIDBIndex",               // IDBIndex
+        "webkitIDBFactory",             // IDBFactory
+        "webkitIDBDatabase",            // IDBDatabase
+        "webkitIDBCursor",              // IDBCursor
+        "webkitIndexedDB",              // indexedDB
+        "webkitURL",                    // URL
     ];
 var _syntaxHighlightData = {
         matcher:  null, // /^\W(function|var|...|with)\W$/
@@ -38,6 +50,8 @@ var ES6_IDENTIFY_KEYWORD =
         "enum|class|super|extends|implements|interface|private|protected|package|" +
         "static|public|export|import|yield|let|const|with";
 
+var functionCache = global["WeakMap"] ? new global["WeakMap"]() : null;
+
 // --- class / interfaces ----------------------------------
 function Reflection() {
 }
@@ -54,7 +68,8 @@ Reflection["getModuleRepository"]   = Reflection_getModuleRepository;   // Refle
 Reflection["getBaseClassName"]      = Reflection_getBaseClassName;      // Reflection.getBaseClassName(value):String
 Reflection["getConstructorName"]    = Reflection_getConstructorName;    // Reflection.getConstructorName(value):String
 // --- function ---
-Reflection["getFunctionAttribute"]  = Reflection_getFunctionAttribute;  // Reflection.getFunctionAttribute(target:Function, name:String = "all"):Object
+Reflection["parseFunction"]         = Reflection_parseFunction;         // Reflection.parseFunction(target:Function):Object
+Reflection["buildFunction"]         = Reflection_buildFunction;         // Reflection.buildFunction(declaration:Object):String
 // --- link ---
 Reflection["getSearchLink"]         = Reflection_getSearchLink;         // Reflection.getSearchLink(path:String):Object
 Reflection["getReferenceLink"]      = Reflection_getReferenceLink;      // Reflection.getReferenceLink(path:String):Object
@@ -80,14 +95,27 @@ function Reflection_resolve(target) { // @arg Function|String target function - 
     }
 //}@dev
 
+    var path = "";
+    var fn   = null;
+
     switch (typeof target) {
     case "function":
-        return { "path": _convertFunctionToPathString(target), "fn": target };
+        path = _convertFunctionToPathString(global, target, ["Object", "Function", "Array", "String", "Number"]) || // inject
+               _convertFunctionToPathString(global.WebModule, target, []); // inject
+        fn   = target;
+        break;
     case "string":
         target = _extractSharp(target);
-        return { "path": target, "fn": _convertPathStringToFunction(target) };
+        path = target;
+        fn   = _convertPathStringToFunction(target);
+        if (!fn) {
+            fn = _convertPathStringToFunction("WebModule." + target);
+            if (fn) {
+                path = "WebModule." + target;
+            }
+        }
     }
-    return { "path": "", "fn": null };
+    return { "path": path, "fn": fn };
 }
 
 function _convertPathStringToFunction(target) { // @arg String        - function path.  "Object.freeze"
@@ -98,29 +126,31 @@ function _convertPathStringToFunction(target) { // @arg String        - function
             }, global);
 }
 
-function _convertFunctionToPathString(target) { // @arg Function - function object. Object.freeze
-                                                // @ret String   - function path.  "Object.freeze"
+function _convertFunctionToPathString(root,         // @arg Object - find root object. global or global.WebModule
+                                      target,       // @arg Function - function object. Object.freeze
+                                      injectKeys) { // @arg StringArray - ["Object", "Function", ...]
+                                                    // @ret String   - function path.  "Object.freeze"
     var path = "";
-    var globalIdentities = _enumKeys(global).sort();
+    var rootKeys = _enumKeys(root).sort();
 
-    globalIdentities.unshift("Object", "Function", "Array", "String", "Number"); // inject
+    Array.prototype.unshift.apply(rootKeys, injectKeys);
 
-    for (var i = 0, iz = globalIdentities.length; i < iz && !path; ++i) {
-        var className = globalIdentities[i];
+    for (var i = 0, iz = rootKeys.length; i < iz && !path; ++i) {
+        var className = rootKeys[i];
 
         if ( IGNORE_KEYWORDS.indexOf(className) < 0 &&
-             global[className] !== null &&
-             /object|function/.test(typeof global[className]) ) {
+             root[className] != null &&
+             /object|function/.test(typeof root[className]) ) {
 
-            var klass = global[className];
+            var klass = root[className];
 
             if (klass === target) {
                 path = className;
             } else {
-                path = _findClassMember(target, className, _enumKeys(klass));
+                path = _findClassMember(target, root, className, _enumKeys(klass));
 
                 if ( !path && ("prototype" in klass) ) {
-                    path = _findPropertyMember(target, className,
+                    path = _findPropertyMember(target, root, className,
                                                _enumKeys(klass["prototype"]));
                 }
             }
@@ -133,67 +163,65 @@ function _enumKeys(object) {
     return (Object["getOwnPropertyNames"] || Object["keys"])(object);
 }
 
-function _findClassMember(target, className, keys) {
+function _findClassMember(target, root, className, keys) {
     for (var i = 0, iz = keys.length; i < iz; ++i) {
         var key = keys[i];
         var path = className + "." + key;
 
-        try {
-            if (IGNORE_KEYWORDS.indexOf(path) < 0 &&
-                IGNORE_KEYWORDS.indexOf(key)  < 0) {
+        if (IGNORE_KEYWORDS.indexOf(path) < 0 &&
+            IGNORE_KEYWORDS.indexOf(key)  < 0) {
 
-                if (global[className][key] === target) {
+            try {
+                if (root[className][key] === target) {
                     return path; // resolved
                 }
-            }
-        } catch (o_o) {}
+            } catch (o_o) {}
+        }
     }
     return "";
 }
 
-function _findPropertyMember(target, className, keys) {
+function _findPropertyMember(target, root, className, keys) {
     for (var i = 0, iz = keys.length; i < iz; ++i) {
         var key = keys[i];
         var path = className + ".prototype." + key;
 
-        try {
-            if (IGNORE_KEYWORDS.indexOf(path) < 0 &&
-                IGNORE_KEYWORDS.indexOf(key)  < 0) {
+        if (IGNORE_KEYWORDS.indexOf(path) < 0 &&
+            IGNORE_KEYWORDS.indexOf(key)  < 0) {
 
-                if (global[className]["prototype"][key] === target) {
+            try {
+                if (root[className]["prototype"][key] === target) {
                     return path; // resolved
                 }
-            }
-        } catch (o_o) {}
+            } catch (o_o) {}
+        }
     }
     return "";
 }
 
-function Reflection_getFunctionAttribute(target, // @arg Function
-                                         name) { // @arg String = "all"
-                                                 // @ret Object - { attrName: { name, type, optional, comment }, ... }
-    var result = {};
-    var sourceCode = target + "";
-    var head = _splitFunctionDeclaration(sourceCode)["head"]; // { head, body }
+function Reflection_parseFunction(target) { // @arg Function
+                                            // @ret Object - { name:String, head:StringArray, body:StringArray, arg:StringArray, ret:StringArray }
+    if (functionCache && functionCache.has(target)) {
+        return functionCache.get(target);
+    }
+    var result = _splitFunctionDeclaration(target + ""); // { head, body }
 
-    switch (name || "all") {
-    case "all":
-        _getArg(head, result);
-        _getRet(head, result);
-        break;
-    case "arg":
-        _getArg(head, result);
-        break;
-    case "ret":
-        _getRet(head, result);
-        break;
+    result["name"] = target["name"];
+    result["arg"]  = _getArg(result["head"]);
+    result["ret"]  = _getRet(result["head"]);
+
+    if (functionCache) {
+        functionCache.set(target, result);
     }
     return result;
 }
 
-function _getArg(head,     // @arg StringArray - [line, ...]
-                 result) { // @arg Object
-                           // @ret Object - result + { "arg": [{ name, type, optional, comment }, ...] }
+function Reflection_buildFunction(declaration) { // @arg Object - { head, body, arg, ret }
+    return ""; // TODO impl
+}
+
+function _getArg(head) { // @arg StringArray - [line, ...]
+                         // @ret Object - [{ name, type, optional, comment }, ...]
     // get @arg attribute.
     //
     //      function Foo_add(name,     // @arg Function|String = ""   comment
@@ -203,8 +231,7 @@ function _getArg(head,     // @arg StringArray - [line, ...]
     //                       name              type              opt  comment
     //      }
 
-    result["arg"] = [];
-
+    var result = [];
     var format = /^([\w\|\/,]+)\s*(=\s*("[^"]*"|'[^']*'|\S+))?\s*([^\n]*)$/;
 
     head.forEach(function(line, lineNumber) {
@@ -224,16 +251,15 @@ function _getArg(head,     // @arg StringArray - [line, ...]
                 optional = token[3] || "";
                 comment  =(token[4] || "").replace(/^[ :#\-]+/, "");
             }
-            result["arg"].push({ "name": name, "type": type,
-                                 "optional": optional, "comment": comment });
+            result.push({ "name": name, "type": type,
+                          "optional": optional, "comment": comment });
         }
     });
     return result;
 }
 
-function _getRet(head,     // @arg StringArray - [line, ...]
-                 result) { // @arg Object
-                           // @ret Object - { "ret": { types, comment }, ... }
+function _getRet(head) { // @arg StringArray - [line, ...]
+                         // @ret Object - [{ types, comment }, ...]
     // get @ret attribute.
     //
     //      function Foo_add(name,     // @arg Function|String = ""   comment
@@ -243,8 +269,7 @@ function _getRet(head,     // @arg StringArray - [line, ...]
     //                                         type                   comment
     //      }
 
-    result["ret"] = [];
-
+    var result = [];
     var format = /^([\w\|\/,]+)\s+([^\n]*)$/;
 
     head.forEach(function(line, lineNumber) {
@@ -259,9 +284,9 @@ function _getRet(head,     // @arg StringArray - [line, ...]
 
             if (token) {
                 type    = token[1];
-                comment = token[2];
+                comment =(token[2] || "").replace(/^[ :#\-]+/, "");
             }
-            result["ret"].push({ "type": type, "comment": comment });
+            result.push({ "type": type, "comment": comment });
         }
     });
     return result;
@@ -321,6 +346,13 @@ function _extractSharp(path) { // @arg String - "Array#forEach"
 function Reflection_getModuleRepository(moduleName) { // @arg String - path. "Reflection"
                                                       // @ret String
                                                       // @desc get WebModule repository url.
+    if (moduleName in global["WebModule"]) {
+        var repository = global["WebModule"][moduleName]["repository"] || "";
+
+        if (repository) {
+            return repository.replace(/\/+$/, ""); // trim tail slash
+        }
+    }
     if (moduleName in global) {
         var repository = global[moduleName]["repository"] || "";
 
@@ -328,7 +360,7 @@ function Reflection_getModuleRepository(moduleName) { // @arg String - path. "Re
             return repository.replace(/\/+$/, ""); // trim tail slash
         }
     }
-    return ""; // global[moduleName] not found
+    return ""; // global["WebModule"][moduleName] or global[moduleName] not found
 }
 
 function Reflection_getSearchLink(path) { // @arg String - "Object.freeze"
@@ -354,6 +386,9 @@ function _createGoogleSearchURL(keyword) { // @arg String - search keyword.
 function Reflection_getReferenceLink(path) { // @arg String - "Object.freeze"
                                              // @ret Object - { title:String, url:URLString }
                                              // @desc get JavaScript/WebModule reference link.
+    if ( /^WebModule\./.test(path) ) {
+        path = path.replace(/^WebModule\./, "");
+    }
     var className  = path.split(".")[0] || "";       // "Array.prototype.forEach" -> ["Array", "prototype", "forEach"] -> "Array"
     var repository = Reflection_getModuleRepository(className); // "https://github.com/uupaa/Help.js"
 
@@ -502,15 +537,6 @@ function _createSyntaxHighlightData() {
     }
     return _syntaxHighlightData;
 }
-
-// --- validate / assertions -------------------------------
-//{@dev
-//function $valid(val, fn, hint) { if (global["Valid"]) { global["Valid"](val, fn, hint); } }
-//function $type(obj, type) { return global["Valid"] ? global["Valid"].type(obj, type) : true; }
-//function $keys(obj, str) { return global["Valid"] ? global["Valid"].keys(obj, str) : true; }
-//function $some(val, str, ignore) { return global["Valid"] ? global["Valid"].some(val, str, ignore) : true; }
-//function $args(fn, args) { if (global["Valid"]) { global["Valid"].args(fn, args); } }
-//}@dev
 
 // --- exports ---------------------------------------------
 if (typeof module !== "undefined") {
@@ -694,7 +720,11 @@ Valid["isRegistered"]   = Valid_isRegistered;   // Valid.isRegistered(type:HookT
 function Valid_args(api,    // @arg Function
                     args) { // @arg Array|ArrayLike
     if (global["Reflection"]) {
-        global["Reflection"]["getFunctionAttribute"](api, "arg")["arg"].forEach(function(item, index) {
+        var func = global["Reflection"]["parseFunction"](api);
+
+        //global["Reflection"]["buildFunction"](func);
+
+        func["arg"].forEach(function(item, index) {
             var type = item["type"];
 
             if (item["optional"]) {
@@ -738,7 +768,7 @@ function Valid_type(value,   // @arg Any
         case "FunctionArray":
                             return Array.isArray(value) && _isFunctionArray(value);
         case "Percent":     return typeof value === "number" && value >= 0.0 && value <= 1.0;
-        // --- integer ---
+        // --- Integer ---
         case "Integer":     return _isInt(value);
         case "Int32":       return _isInt(value)  && value <= 0x7fffffff && value >= -0x80000000;
         case "Int16":       return _isInt(value)  && value <= 0x7fff     && value >= -0x8000;
@@ -746,6 +776,13 @@ function Valid_type(value,   // @arg Any
         case "Uint32":      return _isUint(value) && value <= 0xffffffff;
         case "Uint16":      return _isUint(value) && value <= 0xffff;
         case "Uint8":       return _isUint(value) && value <= 0xff;
+        // --- Integer Array ---
+        case "INT32Array":  return Array.isArray(value) && value.every(function(v) { return _isInt(v)  && v <= 0x7fffffff && v >= -0x80000000; });
+        case "INT16Array":  return Array.isArray(value) && value.every(function(v) { return _isInt(v)  && v <= 0x7fff     && v >= -0x8000; });
+        case "INT8Array":   return Array.isArray(value) && value.every(function(v) { return _isInt(v)  && v <= 0x7f       && v >= -0x80; });
+        case "UINT32Array": return Array.isArray(value) && value.every(function(v) { return _isUint(v) && v <= 0xffffffff; });
+        case "UINT16Array": return Array.isArray(value) && value.every(function(v) { return _isUint(v) && v <= 0xffff; });
+        case "UINT8Array":  return Array.isArray(value) && value.every(function(v) { return _isUint(v) && v <= 0xff; });
         // --- color ---
         case "AARRGGBB":
         case "RRGGBBAA":    return _isUint(value) && value <= 0xffffffff; // Uint32
@@ -772,6 +809,9 @@ function Valid_type(value,   // @arg Any
         if (type in global) { // Is this global Class?
             return baseClassName === type;
         }
+//      if (type in global["WebModule"]) { // Is this WebModule Class?
+//          return baseClassName === type;
+//      }
 
         // Valid.register(type) matching
         if (type in _hook) {
@@ -794,6 +834,9 @@ function Valid_type(value,   // @arg Any
                 if (compositeTypes in global) {
                     return _some(compositeTypes);
                 }
+//              if (compositeTypes in global["WebModule"]) {
+//                  return _some(compositeTypes);
+//              }
             }
         }
         return false;
@@ -1012,7 +1055,14 @@ function Help(target,      // @arg Function|String - function or function-path o
     var search    = Reflection["getSearchLink"](resolved["path"]);
     var reference = Reflection["getReferenceLink"](resolved["path"]);
 
-    _syntaxHighlight(resolved["fn"] + "", highlight);
+    var fn = resolved["fn"];
+    var code = "";
+
+    switch (typeof fn) {
+    case "function": code = fn + ""; break;
+    case "object": code = JSON.stringify(fn, null, 2);
+    }
+    _syntaxHighlight(code, highlight);
     if (!options.noLink) {
         Console["link"](search["url"], search["title"]);
         if (reference) {
@@ -1426,6 +1476,13 @@ function _nextGroup(param) {
             try {
                 param.taskMap[taskName](task, param.arg, param.groupIndex - 1); // call userTask(task, arg, groupIndex) { ... }
             } catch (err) {
+                if (err) {
+                    if (err.stack) {
+                        console.error(err.stack);
+                    } else {
+                        console.error(err.message);
+                    }
+                }
                 task["done"](err);
             }
         } else if ( isFinite(taskName) ) { // isFinite("1000") -> sleep(1000) task
@@ -1483,15 +1540,18 @@ var ERR  = "\u001b[31m";
 var WARN = "\u001b[33m";
 var INFO = "\u001b[32m";
 var CLR  = "\u001b[0m";
+var GHOST = "\uD83D\uDC7B";
+var BEER  = "\uD83C\uDF7B";
 
 // --- class / interfaces ----------------------------------
 function Test(moduleName, // @arg String|StringArray - target modules.
-              options) {  // @arg Object = {} - { disable, browser, worker, node, nw, button, both, ignoreError }
+              options) {  // @arg Object = {} - { disable, browser, worker, node, nw, el, button, both, ignoreError }
                           // @options.disable     Boolean = false - Disable all tests.
                           // @options.browser     Boolean = false - Enable the browser test.
                           // @options.worker      Boolean = false - Enable the webWorker test.
                           // @options.node        Boolean = false - Enable the node.js test.
-                          // @options.nw          Boolean = false - Enable the node-webkit test.
+                          // @options.nw          Boolean = false - Enable the NW.js test.
+                          // @options.el          Boolean = false - Enable the Electron (render process) test.
                           // @options.button      Boolean = false - Show test buttons.
                           // @options.both        Boolean = false - Test the primary and secondary module.
                           // @options.ignoreError Boolean = false - ignore error
@@ -1506,6 +1566,7 @@ function Test(moduleName, // @arg String|StringArray - target modules.
     this._worker      = options["worker"]      || false;
     this._node        = options["node"]        || false;
     this._nw          = options["nw"]          || false;
+    this._el          = options["el"]          || false;
     this._button      = options["button"]      || false;
     this._both        = options["both"]        || false;
     this._ignoreError = options["ignoreError"] || false;
@@ -1517,6 +1578,7 @@ function Test(moduleName, // @arg String|StringArray - target modules.
         this._worker  = false;
         this._node    = false;
         this._nw      = false;
+        this._el      = false;
         this._button  = false;
         this._both    = false;
     }
@@ -1539,7 +1601,7 @@ function Test_run(deprecated) { // @ret TestFunctionArray
     if (deprecated) { throw new Error("argument error"); }
 
     var that = this;
-    var plan = "node_primary > browser_primary > worker_primary > nw_primary";
+    var plan = "node_primary > browser_primary > worker_primary > nw_primary > el_primary";
 
     if (that._both) {
         if (IN_WORKER) {
@@ -1553,6 +1615,7 @@ function Test_run(deprecated) { // @ret TestFunctionArray
         browser_primary: function(task)     { _browserTestRunner(that, task); },
         worker_primary: function(task)      { _workerTestRunner(that, task); },
         nw_primary: function(task)          { _nwTestRunner(that, task); },
+        el_primary: function(task)          { _elTestRunner(that, task); },
         swap: function(task) {
             _swap(that);
             task.pass();
@@ -1561,8 +1624,16 @@ function Test_run(deprecated) { // @ret TestFunctionArray
         browser_secondary: function(task)   { _browserTestRunner(that, task); },
         worker_secondary: function(task)    { _workerTestRunner(that, task); },
 //      nw_secondary: function(task)        { _nwTestRunner(that, task); },
+//      el_secondary: function(task)        { _elTestRunner(that, task); },
     }, function taskFinished(err) {
         _undo(that);
+//        if (err && global["console"]) {
+//            if (err.stack) {
+//                console.error(err.stack);
+//            } else {
+//                console.error(err.message);
+//            }
+//        }
         err ? that._errorback(err) : that._callback();
     });
     return this._testCases.slice();
@@ -1571,6 +1642,7 @@ function Test_run(deprecated) { // @ret TestFunctionArray
 function _testRunner(that,               // @arg this
                      finishedCallback) { // @arg Function
     var testCases = that._testCases.slice(); // clone
+    var progress = { cur: 0, max: testCases.length };
     var task = new Task(testCases.length, finishedCallback, { "tick": _next });
 
     _next();
@@ -1579,10 +1651,28 @@ function _testRunner(that,               // @arg this
         var testCase = testCases.shift();
         if (!testCase) { return; }
 
-        var testCaseName = testCase.name || (testCase + "").split(" ")[1].split("\x28")[0];
+        var testCaseName = _getFunctionName(testCase);
         if (testCase.length === 0) {
             throw new Error("Function " + testCaseName + " has not argument.");
         }
+        var test = {
+            done: function(error) {
+                if (IN_BROWSER || IN_NW || IN_EL) {
+                    if (that._button) {
+                        _addTestButton(that, testCase, error ? "red" : "green");
+                    }
+                    var green = ((++progress.cur / progress.max) * 255) | 0;
+                    var bgcolor = "rgb(0, " + green + ", 0)";
+
+                    document.body["style"]["backgroundColor"] = bgcolor;
+                }
+                if (error) {
+                    task.miss();
+                } else {
+                    task.pass();
+                }
+            }
+        };
         var pass = _getPassFunction(that, testCaseName + " pass");
         var miss = _getMissFunction(that, testCaseName + " miss");
 
@@ -1592,10 +1682,10 @@ function _testRunner(that,               // @arg this
         //  }
 
         if (!that._ignoreError) {
-            testCase(task, pass, miss); // execute testCase
+            testCase(test, pass, miss); // execute testCase
         } else {
             try {
-                testCase(task, pass, miss);
+                testCase(test, pass, miss);
             } catch (o_O) { // [!] catch uncaught exception
                 miss();
                 if (IN_NODE) {
@@ -1614,8 +1704,10 @@ function _browserTestRunner(that, task) {
         if (IN_BROWSER) {
             if (document["readyState"] === "complete") { // already document loaded
                 _onload(that, task);
-            } else {
+            } else if (global.addEventListener) { // avoid [IE8] error
                 global.addEventListener("load", function() { _onload(that, task); });
+            } else if (global.attachEvent) {
+                global.attachEvent("onload", function() { _onload(that, task); });
             }
             return;
         }
@@ -1637,13 +1729,29 @@ function _nwTestRunner(that, task) {
     task.pass();
 }
 
+function _elTestRunner(that, task) {
+    if (that._el) {
+        if (IN_EL) {
+            if (document["readyState"] === "complete") { // already document loaded
+                _onload(that, task);
+            } else if (global.addEventListener) {
+                global.addEventListener("load", function() { _onload(that, task); });
+            }
+            return;
+        }
+    }
+    task.pass();
+}
+
 function _onload(that, task) {
     _testRunner(that, function finishedCallback(err) {
         _finishedLog(that, err);
-        document.body["style"]["backgroundColor"] = err ? "red" : "lime";
-        if (that._button) {
-            _addTestButtons(that, that._testCases);
-        }
+
+        var n = that._secondary ? 2 : 1;
+
+        document.title = (err ? GHOST : BEER).repeat(n) + document.title;
+
+      //document.body["style"]["backgroundColor"] = err ? "red" : "lime";
         task.done(err);
     });
 }
@@ -1716,8 +1824,14 @@ function _swap(that) {
         if (!that._secondary) {
             that._secondary = true;
             that._module.forEach(function(moduleName) {
-                global["$$$" + moduleName + "$$$"] = global[moduleName];
-                global[moduleName] = global[moduleName + "_"]; // swap primary <-> secondary module
+                // swap primary <-> secondary module runtime
+                //  [1] keep original runtime to `global.WebModule.moduleName$p$ = primaryModule`
+                //  [2] overwrite module runtime
+                global["WebModule"][moduleName + "$p$"] = global["WebModule"][moduleName];       // [1]
+                global["WebModule"][moduleName]         = global["WebModule"][moduleName + "_"]; // [2]
+                if (global["WebModule"]["publish"]) { // published?
+                    global[moduleName]                  = global["WebModule"][moduleName + "_"]; // [2]
+                }
             });
         }
     }
@@ -1728,8 +1842,13 @@ function _undo(that) {
         if (that._secondary) {
             that._secondary = false;
             that._module.forEach(function(moduleName) {
-                global[moduleName] = global["$$$" + moduleName + "$$$"];
-                delete global["$$$" + moduleName + "$$$"];
+                // swap secondary <-> primary module runtime
+                //  [1] return to original runtime
+                global["WebModule"][moduleName] = global["WebModule"][moduleName + "$p$"]; // [1]
+                if (global["WebModule"]["publish"]) { // published?
+                    global[moduleName]          = global["WebModule"][moduleName + "$p$"]; // [1]
+                }
+                delete global["WebModule"][moduleName + "$p$"];
             });
         }
     }
@@ -1740,6 +1859,7 @@ function _getConsoleStyle() {
         return IN_NODE   ? "node"
              : IN_WORKER ? "worker"
              : IN_NW     ? "nw"
+             : IN_EL     ? "el"
              : STYLISH   ? "color" : "browser";
     }
     return "";
@@ -1748,12 +1868,17 @@ function _getConsoleStyle() {
 function _getPassFunction(that, passMessage) { // @ret PassFunction
     var order = that._secondary ? "secondary" : "primary";
 
+    if (typeof console.log !== "function") { // [IE9] console.log is not function.
+        return function() { console.log(passMessage); };
+    }
+
     switch ( _getConsoleStyle() ) {
     case "node":    return console.log.bind(console, INFO + "Node(" + order + "): " + CLR + passMessage);
     case "worker":  return console.log.bind(console,      "Worker(" + order + "): " + passMessage);
     case "color":   return console.log.bind(console,   "%cBrowser(" + order + "): " + passMessage + "%c ", "color:#0c0", "");
     case "browser": return console.log.bind(console,     "Browser(" + order + "): " + passMessage);
-    case "nw":      return console.log.bind(console, "node-webkit(" + order + "): " + passMessage);
+    case "nw":      return console.log.bind(console,          "nw(" + order + "): " + passMessage);
+    case "el":      return console.log.bind(console,    "electron(" + order + "): " + passMessage);
     }
     return null;
 }
@@ -1766,40 +1891,57 @@ function _getMissFunction(that, missMessage) { // @ret MissFunction
     case "worker":  return function() { console.error(   "Worker(" + order + "): " + missMessage);                           return new Error(); };
     case "color":   return function() { console.error("%cBrowser(" + order + "): " + missMessage + "%c ", "color:#red", ""); return new Error(); };
     case "browser": return function() { console.error(  "Browser(" + order + "): " + missMessage);                           return new Error(); };
-    case "nw":      return function() { console.error("node-webkit("+order + "): " + missMessage);                           return new Error(); };
+    case "nw":      return function() { console.error(       "nw(" + order + "): " + missMessage);                           return new Error(); };
+    case "el":      return function() { console.error( "electron(" + order + "): " + missMessage);                           return new Error(); };
     }
     return null;
 }
 
 function _finishedLog(that, err) {
+    var n = that._secondary ? 2 : 1;
+
     if (err) {
-        _getMissFunction(that, "SOME MISSED.")();
+        _getMissFunction(that, GHOST.repeat(n) + "  MISS.")();
     } else {
-        _getPassFunction(that, "ALL PASSED.")();
+        _getPassFunction(that, BEER.repeat(n)  + "  PASS ALL.")();
     }
 }
 
-function _addTestButtons(that, cases) { // @arg TestCaseFunctionArray
+function _addTestButton(that,
+                        testCase,      // @arg TestCaseFunction
+                        buttonColor) { // @arg String - button color
     // add <input type="button" onclick="test()" value="test()" /> buttons
-    cases.forEach(function(fn, index) {
-        var itemName = fn["name"] || (fn + "").split(" ")[1].split("\x28")[0];
-        var safeName = itemName.replace(/\$/, "_"); // "concat$" -> "concat_"
+    var itemName = _getFunctionName(testCase);
+    var safeName = itemName.replace(/\$/, "_"); // "concat$" -> "concat_"
 
-        if (!document.querySelector("#" + safeName)) {
-            var inputNode = document.createElement("input");
-            var next = "{pass:function(){},miss:function(){},done:function(){}}";
-            var pass = "function(){console.log('"   + itemName + " pass')}";
-            var miss = "function(){console.error('" + itemName + " miss')}";
+    if (!document.querySelector("#" + safeName)) {
+        var inputNode = document.createElement("input");
+        var next = "{pass:function(){},miss:function(){},done:function(){}}";
+        var pass = "function(){console.log('"   + itemName + " pass')}";
+        var miss = "function(){console.error('" + itemName + " miss')}";
+        var index = that._testCases.indexOf(testCase);
 
-            inputNode.setAttribute("id", safeName);
-            inputNode.setAttribute("type", "button");
-            inputNode.setAttribute("value", itemName + "()");
-            inputNode.setAttribute("onclick", "ModuleTest" + that._module[0] +
-                    "[" + index + "](" + next + ", " + pass + ", " + miss + ")");
+        inputNode.setAttribute("id", safeName);
+        inputNode.setAttribute("type", "button");
+        inputNode.setAttribute("style", "color:" + buttonColor);
+        inputNode.setAttribute("value", itemName + "()");
+        inputNode.setAttribute("onclick", "ModuleTest" + that._module[0] +
+                "[" + index + "](" + next + ", " + pass + ", " + miss + ")");
 
-            document.body.appendChild(inputNode);
-        }
-    });
+        document.body.appendChild(inputNode);
+    }
+}
+
+function _getFunctionName(fn) {
+    return fn["name"] ||
+          (fn + "").split(" ")[1].split("\x28")[0]; // IE
+}
+
+if (!String.prototype.repeat) {
+    String.prototype.repeat = function(n) {
+        n = n | 0;
+        return (this.length && n > 0) ? new Array(n + 1).join(this) : "";
+    };
 }
 
 // --- exports ---------------------------------------------

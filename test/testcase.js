@@ -1,69 +1,57 @@
 var ModuleTestURI = (function(global) {
 
-global["BENCHMARK"] = false;
-
-var test = new Test("URI", {
+var test = new Test(["URI"], { // Add the ModuleName to be tested here (if necessary).
         disable:    false, // disable all tests.
         browser:    true,  // enable browser test.
         worker:     true,  // enable worker test.
         node:       true,  // enable node test.
         nw:         true,  // enable nw.js test.
+        el:         true,  // enable electron (render process) test.
         button:     true,  // show button.
         both:       true,  // test the primary and secondary modules.
         ignoreError:false, // ignore error.
         callback:   function() {
         },
         errorback:  function(error) {
+            console.error(error.message);
         }
-    }).add([
-        testURIParse,
-        testURIParse2,
-        testURIParse3,
-        testURIParse4,
-        testURIParse5,
-        testURIParse6,
-        testURIValid,
-        testURIValidArray,
-        testURIParseAndBuild,
-        testURIIsAbsolute,
-        testURIIsRelative,
-        testURIResolveAbsolute,
-        testURIResolveWithoutBasePath,
-        testURIResolveWithBasePath,
-        testURINormalize,
-        testURIQueryString,
-        testEncodeURIComponent,
-        testDecodeURIComponent,
-        testURICacheBustring,
-        testURIMatch,
+    });
+
+if (IN_BROWSER || IN_NW || IN_EL || IN_WORKER || IN_NODE) {
+    test.add([
+        testURI_parse,
+        testURI_parse2,
+        testURI_parse3,
+        testURI_parse4,
+        testURI_parse5,
+        testURI_parse6,
+        testURI_valid,
+        testURI_validArray,
+        testURI_parseAndBuild,
+        testURI_isAbsoluteURL,
+        testURI_isRelativeURL,
+        testURI_resolveAbsoluteURL,
+        testURI_resolveWithoutBasePath,
+        testURI_resolveWithBasePath,
+        testURI_normalize,
+        testURI_queryString,
+        testURI_encodeURIComponent,
+        testURI_decodeURIComponent,
+        testURI_cacheBustring,
+        testURI_match,
         testURI_isBlob,
     ]);
-
-if (IN_BROWSER || IN_NW) {
+}
+if (IN_BROWSER || IN_NW || IN_EL) {
     test.add([
-        // browser and node-webkit test
-    ]);
-} else if (IN_WORKER) {
-    test.add([
-        // worker test
-    ]);
-} else if (IN_NODE) {
-    test.add([
-        // node.js and io.js test
     ]);
 }
-
-/*
-if (!IN_WORKER && IN_BROWSER) {
+if (IN_WORKER) {
     test.add([
-        //testURIGetCurrentURI,
     ]);
 }
- */
-
-if (global["Valid"]) {
+if (IN_NODE) {
     test.add([
-        testValidRegisterTypes,
     ]);
 }
 
@@ -86,7 +74,7 @@ function testURIGetCurrentURI(test) {
 }
  */
 
-function testURIParse(test, pass, miss) {
+function testURI_parse(test, pass, miss) {
     var href = "http://user:pass@example.com:8080/dir1/dir2/file.ext?a=b;c=d#hash";
 
     var obj = URI.parse(href);
@@ -118,7 +106,7 @@ function testURIParse(test, pass, miss) {
     test.done(miss());
 }
 
-function testURIParse2(test, pass, miss) {
+function testURI_parse2(test, pass, miss) {
     var href = "/dir1/dir2/file.ext?a=b;c=d#hash"; // root and absolute
 
     var obj = URI.parse(href);
@@ -150,7 +138,7 @@ function testURIParse2(test, pass, miss) {
     test.done(miss());
 }
 
-function testURIParse3(test, pass, miss) {
+function testURI_parse3(test, pass, miss) {
     var href = "./dir1/dir2/file.ext?a=b;c=d#hash"; // retative
 
     var obj = URI.parse(href);
@@ -182,7 +170,7 @@ function testURIParse3(test, pass, miss) {
     test.done(miss());
 }
 
-function testURIParse4(test, pass, miss) {
+function testURI_parse4(test, pass, miss) {
     var href = "file://localhost/dir1/dir2/file.ext?a=b;c=d#hash"; // file and localhost
 
     var obj = URI.parse(href);
@@ -214,7 +202,7 @@ function testURIParse4(test, pass, miss) {
     test.done(miss());
 }
 
-function testURIParse5(test, pass, miss) {
+function testURI_parse5(test, pass, miss) {
     var href = "file:///dir1/dir2/file.ext?a=b;c=d#hash"; // file without localhost
 
     var obj = URI.parse(href);
@@ -246,7 +234,7 @@ function testURIParse5(test, pass, miss) {
     test.done(miss());
 }
 
-function testURIParse6(test, pass, miss) {
+function testURI_parse6(test, pass, miss) {
     var href = "file:///";
 
     var obj = URI.parse(href);
@@ -274,7 +262,7 @@ function testURIParse6(test, pass, miss) {
     }
 }
 
-function testURIValid(test, pass, miss) {
+function testURI_valid(test, pass, miss) {
 
     var invalidURL = "http://example.com:port/dir/file.exe?key=value#hash";
 
@@ -284,7 +272,7 @@ function testURIValid(test, pass, miss) {
         test.done(miss());
     }
 }
-function testURIValidArray(test, pass, miss) {
+function testURI_validArray(test, pass, miss) {
 
     var invalidSource = [
             "<html>",
@@ -306,7 +294,7 @@ function testURIValidArray(test, pass, miss) {
     }
     test.done(miss());
 }
-function testURIParseAndBuild(test, pass, miss) {
+function testURI_parseAndBuild(test, pass, miss) {
 
     var absurl = "http://example.com/dir/file.exe?key=value#hash";
     var parsed = URI.parse(absurl);
@@ -321,27 +309,34 @@ function testURIParseAndBuild(test, pass, miss) {
     }
 }
 
-function testURIIsAbsolute(test, pass, miss) {
-    var url = "http://example.com";
+function testURI_isAbsoluteURL(test, pass, miss) {
+    var url = {
+            1: URI.isAbsolute("http://example.com"),
+            2: URI.isAbsolute("https://example.com"),
+            3: !URI.isAbsolute("//example.com"),
+        };
 
-    if ( URI.isAbsolute(url) === true) {
-        test.done(pass());
-    } else {
+    if ( /false/.test(JSON.stringify(url)) ) {
         test.done(miss());
+    } else {
+        test.done(pass());
     }
 }
 
-function testURIIsRelative(test, pass, miss) {
-    var url = "/dir/file.ext";
+function testURI_isRelativeURL(test, pass, miss) {
+    var url = {
+            1: URI.isRelative("/dir/file.ext"),
+            2: URI.isRelative("//example.com"),
+        };
 
-    if ( URI.isRelative(url) === true) {
-        test.done(pass());
-    } else {
+    if ( /false/.test(JSON.stringify(url)) ) {
         test.done(miss());
+    } else {
+        test.done(pass());
     }
 }
 
-function testURIResolveAbsolute(test, pass, miss) {
+function testURI_resolveAbsoluteURL(test, pass, miss) {
     var src = "http://example.com/dir/file.ext";
     var abs = URI.resolve(src);
     var url = URI.build(URI.parse(abs));
@@ -353,7 +348,7 @@ function testURIResolveAbsolute(test, pass, miss) {
     }
 }
 
-function testURIResolveWithoutBasePath(test, pass, miss) {
+function testURI_resolveWithoutBasePath(test, pass, miss) {
     var src = "/dir/file.ext";
 
     if (IN_NODE || IN_WORKER) {
@@ -380,7 +375,7 @@ function testURIResolveWithoutBasePath(test, pass, miss) {
     }
 }
 
-function testURIResolveWithBasePath(test, pass, miss) {
+function testURI_resolveWithBasePath(test, pass, miss) {
     var src = "/dir/file.ext";
     var abs = URI.resolve(src, "http://localhost:8080/");
     var obj = URI.parse(abs);
@@ -395,7 +390,7 @@ function testURIResolveWithBasePath(test, pass, miss) {
     }
 }
 
-function testURINormalize(test, pass, miss) {
+function testURI_normalize(test, pass, miss) {
     var items = {
             // url                      result
             "dir/.../a.file":           "dir/a.file",
@@ -427,7 +422,7 @@ function testURINormalize(test, pass, miss) {
     }
 }
 
-function testURIQueryString(test, pass, miss) {
+function testURI_queryString(test, pass, miss) {
     var url = "http://example.com?key1=a;key2=b;key3=0;key3=1";
 
     var urlQueryObject = URI.parseQuery(url);
@@ -441,7 +436,7 @@ function testURIQueryString(test, pass, miss) {
     }
 }
 
-function testEncodeURIComponent(test, pass, miss) {
+function testURI_encodeURIComponent(test, pass, miss) {
 
     var source = "123ABCあいう!%#";
     var code   = encodeURIComponent(source);
@@ -454,7 +449,7 @@ function testEncodeURIComponent(test, pass, miss) {
     }
 }
 
-function testDecodeURIComponent(test, pass, miss) {
+function testURI_decodeURIComponent(test, pass, miss) {
 
     var source = "123ABCあいう!%#";
     var code   = encodeURIComponent(source);
@@ -467,7 +462,7 @@ function testDecodeURIComponent(test, pass, miss) {
     }
 }
 
-function testURICacheBustring(test, pass, miss) {
+function testURI_cacheBustring(test, pass, miss) {
 
     var testCase = [
             "http://example.com/",
@@ -500,7 +495,7 @@ function testURICacheBustring(test, pass, miss) {
     }
 }
 
-function testURIMatch(test, pass, miss) {
+function testURI_match(test, pass, miss) {
 
     var result = [
         URI.match("http://example.com/**/*.png",

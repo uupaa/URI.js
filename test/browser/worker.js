@@ -12,13 +12,17 @@ onmessage = function(event) {
         self.console.table = function() {};
     }
 
-    importScripts("../lib/WebModuleGlobal.js");
+    importScripts("../../lib/WebModule.js");
 
-    importScripts("../node_modules/uupaa.hash.js/lib/Hash.js");
-    importScripts("wmtools.js");
-    importScripts("../lib/URI.js");
-    importScripts("../release/URI.w.min.js");
-    importScripts("testcase.js");
+    WebModule.verify  = true;
+    WebModule.verbose = true;
+    WebModule.publish = true;
+
+    
+    importScripts("../wmtools.js");
+    importScripts("../../lib/URI.js");
+    importScripts("../../release/URI.w.min.js");
+    importScripts("../testcase.js");
 
     self.postMessage(self.unitTest);
 };

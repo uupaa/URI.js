@@ -1,26 +1,31 @@
 {
   "name": "uupaa.uri.js",
-  "version": "0.9.6",
-  "description": "URL parse and build.",
+  "version": "0.9.7",
+  "description": "",
   "url": "https://github.com/uupaa/URI.js",
-  "keywords": ["uupaa", "WebModule", "Unstable"],
+  "keywords": ["URL", "URI", "uupaa", "WebModule", "Unstable"],
   "repository": {
     "type": "git",
     "url": "https://github.com/uupaa/URI.js.git"
   },
   "scripts": {
     "sync": "node ../WebModule/run/sync.js; npm update; node ../WebModule/run/page.js",
+    "wiki": "node ../WebModule/run/wiki.js",
     "min": "node ../WebModule/run/minify.js --verbose --strict --keep --pretty",
     "build": "node ../WebModule/run/minify.js --verbose --strict --keep --release",
-    "watch": "node ../WebModule/run/watch.js --verbose --run hint",
+    "watch": "node ../WebModule/run/watch.js --verbose --run lint",
     "page": "node ../WebModule/run/page.js --verbose",
     "test": "npm run min; npm run node; npm run browser",
-    "node": "NODE_ENV=production NODE_PATH=lib node --harmony test/node.js",
-    "noded": "NODE_ENV=production NODE_PATH=lib node --debug-brk --harmony test/node.js",
-    "browser": "open http://localhost:8000/URI.js/test/index.html",
-    "sim": "node ../WebModule/run/sim.js http://localhost:8000/URI.js/test/index.html",
+    "node": "NODE_ENV=production NODE_PATH=lib node test/node/index.js",
+    "noded": "NODE_ENV=production NODE_PATH=lib node --debug-brk test/node/index.js",
+    "browser": "open http://localhost:8000/URI.js/test/browser/index.html",
+    "el": "electron test/el",
+    "nw": "nw test/nw",
+    "add-src": "node ../WebModule/run/add-src.js",
+    "add-subclass": "node ../WebModule/run/add-subclass.js",
+    "sim": "node ../WebModule/run/sim.js http://localhost:8000/URI.js/test/browser/index.html",
     "simx": "node ../WebModule/run/sim.js stop",
-    "hint": "eslint lib/*.js",
+    "lint": "eslint lib/*.js",
     "score": "node ../WebModule/run/score.js; open lint/plato/index.html",
     "patch": "node ../WebModule/run/patch.js",
     "setup": "node ../WebModule/run/setup.js",
@@ -31,25 +36,37 @@
     "develop": false,
     "label": ["@dev"],
     "browser": {
-      "source": ["lib/URI.js"],
-      "output": "release/URI.b.min.js"
+      "output": "release/URI.b.min.js",
+      "source": [
+        "lib/URI.js"
+      ]
     },
     "worker": {
-      "source": ["lib/URI.js"],
-      "output": "release/URI.w.min.js"
+      "output": "release/URI.w.min.js",
+      "source": [
+        "lib/URI.js"
+      ]
     },
     "node": {
-      "source": ["lib/URI.js"],
-      "output": "release/URI.n.min.js"
+      "output": "release/URI.n.min.js",
+      "source": [
+        "lib/URI.js"
+      ]
     },
     "nw": {
-      "source": ["lib/URI.js"],
-      "output": "release/URI.nw.min.js"
+      "output": "release/URI.nw.min.js",
+      "source": [
+        "lib/URI.js"
+      ]
+    },
+    "el": {
+      "output": "release/URI.el.min.js",
+      "source": [
+        "lib/URI.js"
+      ]
     }
   },
-  "dependencies": {
-    "uupaa.hash.js": ""
-  },
+  "dependencies": {},
   "devDependencies": {},
   "lib": "./lib/",
   "main": "./index.js",
