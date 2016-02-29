@@ -40,6 +40,7 @@ if (IN_BROWSER || IN_NW || IN_EL || IN_WORKER || IN_NODE) {
         testURI_cacheBustring,
         testURI_match,
         testURI_isBlob,
+        testURI_getDir,
     ]);
 }
 if (IN_BROWSER || IN_NW || IN_EL) {
@@ -579,6 +580,20 @@ function testURI_isBlob(test, pass, miss) {
     }
 }
 
+function testURI_getDir(test, pass, miss) {
+    var result = {
+            1: URI.getDir("http://example.com/a/b/c.ext")           === "/a/b/",
+            2: URI.getDir("https://example.com/a/b/c.ext?a=1#foo")  === "/a/b/",
+            3: URI.getDir("https://example.com/?a=1#foo")           === "/",
+            4: URI.getDir("https://example.com")                    === "/",
+        };
+
+    if ( /false/.test(JSON.stringify(result)) ) {
+        test.done(miss());
+    } else {
+        test.done(pass());
+    }
+}
 
 return test.run();
 
