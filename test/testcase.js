@@ -41,18 +41,7 @@ if (IN_BROWSER || IN_NW || IN_EL || IN_WORKER || IN_NODE) {
         testURI_match,
         testURI_isBlob,
         testURI_getDir,
-    ]);
-}
-if (IN_BROWSER || IN_NW || IN_EL) {
-    test.add([
-    ]);
-}
-if (IN_WORKER) {
-    test.add([
-    ]);
-}
-if (IN_NODE) {
-    test.add([
+        testURI_getExt,
     ]);
 }
 
@@ -594,6 +583,22 @@ function testURI_getDir(test, pass, miss) {
         test.done(pass());
     }
 }
+
+function testURI_getExt(test, pass, miss) {
+    var result = {
+            1: URI.getExt("http://example.com/a/b/c.ext")           === "ext",
+            2: URI.getExt("https://example.com/a/b/c.ext?a=1#foo")  === "ext",
+            3: URI.getExt("https://example.com/?a=1#foo")           === "",
+            4: URI.getExt("https://example.com")                    === "",
+        };
+
+    if ( /false/.test(JSON.stringify(result)) ) {
+        test.done(miss());
+    } else {
+        test.done(pass());
+    }
+}
+
 
 return test.run();
 
