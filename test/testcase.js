@@ -19,14 +19,14 @@ var test = new Test(["URI"], { // Add the ModuleName to be tested here (if neces
 
 if (IN_BROWSER || IN_NW || IN_EL || IN_WORKER || IN_NODE) {
     test.add([
-        testURI_parse,
-        testURI_parse2,
-        testURI_parse3,
-        testURI_parse4,
-        testURI_parse5,
-        testURI_parse6,
-        testURI_parse7_BlobURL,
-        testURI_parse8_scheme_uppercase,
+        testURI_parse_http,
+        testURI_parse_relpath_root,
+        testURI_parse_relpath_noroot,
+        testURI_parse_file_with_localhost,
+        testURI_parse_file_without_localhost,
+        testURI_parse_file_root,
+        testURI_parse_blob_http,
+        testURI_parse_HTTP,
         testURI_isValid,
         testURI_parseAndBuild,
         testURI_isAbsoluteURL,
@@ -42,7 +42,8 @@ if (IN_BROWSER || IN_NW || IN_EL || IN_WORKER || IN_NODE) {
         testURI_match,
         testURI_getDir,
         testURI_getExt,
-        testURI_getProtocol
+        testURI_getProtocol,
+        testURI_isBlob,
     ]);
 }
 
@@ -65,7 +66,7 @@ function testURIGetCurrentURI(test) {
 }
  */
 
-function testURI_parse(test, pass, miss) {
+function testURI_parse_http(test, pass, miss) {
     var href = "http://user:pass@example.com:8080/dir1/dir2/file.ext?a=b;c=d#hash";
 
     var obj = URI.parse(href);
@@ -97,7 +98,7 @@ function testURI_parse(test, pass, miss) {
     test.done(miss());
 }
 
-function testURI_parse2(test, pass, miss) {
+function testURI_parse_relpath_root(test, pass, miss) {
     var href = "/dir1/dir2/file.ext?a=b;c=d#hash"; // root and absolute
 
     var obj = URI.parse(href);
@@ -129,7 +130,7 @@ function testURI_parse2(test, pass, miss) {
     test.done(miss());
 }
 
-function testURI_parse3(test, pass, miss) {
+function testURI_parse_relpath_noroot(test, pass, miss) {
     var href = "./dir1/dir2/file.ext?a=b;c=d#hash"; // retative
 
     var obj = URI.parse(href);
@@ -161,7 +162,7 @@ function testURI_parse3(test, pass, miss) {
     test.done(miss());
 }
 
-function testURI_parse4(test, pass, miss) {
+function testURI_parse_file_with_localhost(test, pass, miss) {
     var href = "file://localhost/dir1/dir2/file.ext?a=b;c=d#hash"; // file and localhost
 
     var obj = URI.parse(href);
@@ -193,7 +194,7 @@ function testURI_parse4(test, pass, miss) {
     test.done(miss());
 }
 
-function testURI_parse5(test, pass, miss) {
+function testURI_parse_file_without_localhost(test, pass, miss) {
     var href = "file:///dir1/dir2/file.ext?a=b;c=d#hash"; // file without localhost
 
     var obj = URI.parse(href);
@@ -225,7 +226,7 @@ function testURI_parse5(test, pass, miss) {
     test.done(miss());
 }
 
-function testURI_parse6(test, pass, miss) {
+function testURI_parse_file_root(test, pass, miss) {
     var href = "file:///";
 
     var obj = URI.parse(href);
@@ -253,14 +254,15 @@ function testURI_parse6(test, pass, miss) {
     }
 }
 
-function testURI_parse7_BlobURL(test, pass, miss) {
-    var href = "blob://user:pass@example.com:8080/dir1/dir2/file.ext?a=b;c=d#hash";
+function testURI_parse_blob_http(test, pass, miss) {
+    var href = "blob:http://user:pass@example.com:8080/dir1/dir2/file.ext?a=b;c=d#hash";
 
     var obj = URI.parse(href);
 
     if (obj.href     === href &&
-        obj.protocol === "blob:" &&
-        obj.origin   === "blob://example.com:8080" &&
+        obj.prefix   === "blob:" &&
+        obj.protocol === "http:" &&
+        obj.origin   === "http://example.com:8080" &&
         obj.host     === "example.com:8080" &&
         obj.hostname === "example.com" &&
         obj.port     === "8080" &&
@@ -271,7 +273,7 @@ function testURI_parse7_BlobURL(test, pass, miss) {
         obj.hash     === "#hash") {
 
         // check extras properties
-        if (obj.scheme   === "blob:" &&
+        if (obj.scheme   === "http:" &&
           //obj.path     === "/dir1/dir2/file.ext?a=b;c=d#hash" &&
             obj.path     === "/dir1/dir2/file.ext?a=b;c=d" &&
             obj.dir      === "/dir1/dir2" &&
@@ -285,7 +287,7 @@ function testURI_parse7_BlobURL(test, pass, miss) {
     test.done(miss());
 }
 
-function testURI_parse8_scheme_uppercase(test, pass, miss) {
+function testURI_parse_HTTP(test, pass, miss) {
     var href = "HTTP://user:pass@example.com:8080/dir1/dir2/file.ext?a=b;c=d#hash";
 
     var obj = URI.parse(href);
@@ -322,7 +324,7 @@ function testURI_isValid(test, pass, miss) {
     var result = {
         0: URI.isValid("http://example.com:port/dir/file.exe?key=value#hash") === true,
         1: URI.isValid("HTTP://example.com:port/dir/file.exe?key=value#hash") === true,
-        2: URI.isValid("blob://example.com:port/dir/file.exe?key=value#hash") === true,
+        2: URI.isValid("blob:http://example.com:port/dir/file.exe?key=value#hash") === true,
         3: URI.isValid("<html>") === false,
         4: URI.isValid("123://dir/file.exe?key=value#hash") === false,
         5: URI.isValid("http://example.com:port/dir/file.exe?key=value#hash") === true,
@@ -330,6 +332,8 @@ function testURI_isValid(test, pass, miss) {
         7: URI.isValid("./dir/file.exe?key=value#hash") === true,
         8: URI.isValid("C:/dir/file.exe?key=value#hash") === true,
         9: URI.isValid("file://C:/dir/file.exe?key=value#hash") === true,
+       10: URI.isValid("http://user:pass@example.com:8080/dir1/dir2/file.ext?a=b;c=d#hash") === true,
+       11: URI.isValid("blob:http://user:pass@example.com:8080/dir1/dir2/file.ext?a=b;c=d#hash") === true,
     };
 
     if ( /false/.test(JSON.stringify(result)) ) {
@@ -356,10 +360,15 @@ function testURI_parseAndBuild(test, pass, miss) {
 
 function testURI_isAbsoluteURL(test, pass, miss) {
     var url = {
-            1: URI.isAbsolute("http://example.com") === true,
-            2: URI.isAbsolute("https://example.com") === true,
-            3: URI.isAbsolute("blob://example.com") === true,
-            4: URI.isAbsolute("//example.com") === false,
+            1: URI.isAbsolute("http://example.com")                                    === true,
+            2: URI.isAbsolute("https://example.com")                                   === true,
+            3: URI.isAbsolute("blob:http://example.com")                               === true,
+            4: URI.isAbsolute("//example.com")                                         === false,
+            5: URI.isAbsolute("http://example.com/dir/file.ext?query=value#hash")      === true,
+            6: URI.isAbsolute("blob:http://example.com/dir/file.ext?query=value#hash") === true,
+            7: URI.isAbsolute("./dir/file.ext?a=b#hash")                               === false,
+            8: URI.isAbsolute("file:///dir/file.ext?a=b#hash")                         === true,
+            9: URI.isAbsolute("file://localhost/dir/file.ext?a=b#hash")                === true,
         };
 
     if ( /false/.test(JSON.stringify(url)) ) {
@@ -448,7 +457,8 @@ function testURI_normalize(test, pass, miss) {
             "../../../../a.file":       "/a.file",
             "http://example.com/../../../../a.file":        "http://example.com/a.file",
             "http://example.com/././//./.../a.file":        "http://example.com/a.file",
-            "http://example.com///..//hoge/....//huga.ext": "http://example.com/hoge/huga.ext"
+            "http://example.com///..//hoge/....//huga.ext": "http://example.com/hoge/huga.ext",
+            "blob:http://example.com///..//hoge/....//huga.ext": "blob:http://example.com/hoge/huga.ext",
         };
 
     var ok = true;
@@ -470,16 +480,16 @@ function testURI_normalize(test, pass, miss) {
 }
 
 function testURI_queryString(test, pass, miss) {
-    var url = "http://example.com?key1=a;key2=b;key3=0;key3=1";
+    var result = {
+        0: JSON.stringify( URI.parseQuery( "http://example.com?key1=a;key2=b;key3=0;key3=1" ) ) === '{"key1":"a","key2":"b","key3":["0","1"]}',
+        1: JSON.stringify( URI.parseQuery( "file://example.com?key1=a;key2=b;key3=0;key3=1" ) ) === '{"key1":"a","key2":"b","key3":["0","1"]}',
+        2: JSON.stringify( URI.parseQuery( "blob:http://example.com?key1=a;key2=b;key3=0;key3=1" ) ) === '{"key1":"a","key2":"b","key3":["0","1"]}',
+    };
 
-    var urlQueryObject = URI.parseQuery(url);
-
-    var result = JSON.stringify( urlQueryObject );
-
-    if (result === '{"key1":"a","key2":"b","key3":["0","1"]}') {
-        test.done(pass());
-    } else {
+    if ( /false/.test(JSON.stringify(result)) ) {
         test.done(miss());
+    } else {
+        test.done(pass());
     }
 }
 
@@ -510,35 +520,18 @@ function testURI_decodeURIComponent(test, pass, miss) {
 }
 
 function testURI_cacheBustring(test, pass, miss) {
+    var result = {
+        0: URI.parseQuery( URI.addCacheBustingKeyword("http://example.com/",             "xyz") ).xyz !== "",
+        1: URI.parseQuery( URI.addCacheBustingKeyword("http://example.com/?a=b",         "xyz") ).xyz !== "",
+        2: URI.parseQuery( URI.addCacheBustingKeyword("http://example.com/?a=b&c=d",     "xyz") ).xyz !== "",
+        3: URI.parseQuery( URI.addCacheBustingKeyword("http://example.com/?a=b&c=d#foo", "xyz") ).xyz !== "",
+        4: URI.parseQuery( URI.addCacheBustingKeyword("blob:http://example.com/?a=b&c=d#foo", "xyz") ).xyz !== "",
+    };
 
-    var testCase = [
-            "http://example.com/",
-            "http://example.com/?a=b",
-            "http://example.com/?a=b&c=d",
-            "http://example.com/?a=b&c=d#foo",
-        ];
-
-    var ok = testCase.every(function(src) {
-                var url = URI.addCacheBustingKeyword(src, "xyz");
-
-                if (!URI.isValid(url)) {
-                    return false;
-                }
-
-                var queryObject = URI.parseQuery(url);
-
-                if (queryObject.xyz) {
-                    return true;
-                }
-                return false;
-            });
-
-    URI.addCacheBustingKeyword(testCase[0]); // omit keyword
-
-    if (ok) {
-        test.done(pass());
-    } else {
+    if ( /false/.test(JSON.stringify(result)) ) {
         test.done(miss());
+    } else {
+        test.done(pass());
     }
 }
 
@@ -642,9 +635,9 @@ function testURI_getExt(test, pass, miss) {
 
 function testURI_getProtocol(test, pass, miss) {
     var result = [
-        URI.getProtocol("blob:https://example.org/9115d58c-bcda-ff47-86e5-083e9a215304") === "blob:",
-        URI.getProtocol("blob:https://example.org/9115d58c-bcda-ff47-86e5-083e9a215304#hello") === "blob:",
-        URI.getProtocol("blob:") === "blob:",
+        URI.getProtocol("blob:https://example.org/9115d58c-bcda-ff47-86e5-083e9a215304") === "https:",
+        URI.getProtocol("blob:https://example.org/9115d58c-bcda-ff47-86e5-083e9a215304#hello") === "https:",
+        URI.getProtocol("blob:") === "",
         URI.getProtocol("file:///dir/file.ext") === "file:",
         URI.getProtocol("file://localhost/dir/file.ext") === "file:",
         URI.getProtocol("file:") === "file:",
@@ -663,6 +656,28 @@ function testURI_getProtocol(test, pass, miss) {
         test.done(pass());
     }
 }
+
+function testURI_isBlob(test, pass, miss) {
+    var result = [
+        URI.isBlob("blob:https://example.org/9115d58c-bcda-ff47-86e5-083e9a215304") === true,
+        URI.isBlob("blob:https://example.org/9115d58c-bcda-ff47-86e5-083e9a215304#hello") === true,
+        URI.isBlob("blob:") === true,
+        URI.isBlob("file:///dir/file.ext") === false,
+        URI.isBlob("file://localhost/dir/file.ext") === false,
+        URI.isBlob("http://example.com/dir/file.ext") === false,
+        URI.isBlob("HTTPS://example.com/dir/file.ext") === false,
+        URI.isBlob("ws://example.com/dir/file.ext") === false,
+        URI.isBlob("wss://example.com/dir/file.ext") === false,
+        URI.isBlob("") === false,
+    ];
+
+    if ( /false/.test(JSON.stringify(result)) ) {
+        test.done(miss());
+    } else {
+        test.done(pass());
+    }
+}
+
 
 return test.run();
 
