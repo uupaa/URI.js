@@ -40,9 +40,9 @@ if (IN_BROWSER || IN_NW || IN_EL || IN_WORKER || IN_NODE) {
         testURI_decodeURIComponent,
         testURI_cacheBustring,
         testURI_match,
-        testURI_isBlob,
         testURI_getDir,
         testURI_getExt,
+        testURI_getProtocol
     ]);
 }
 
@@ -610,21 +610,6 @@ function testValidRegisterTypes(test, pass, miss) {
     return;
 }
 
-function testURI_isBlob(test, pass, miss) {
-    var result = {
-        0: URI.isBlob("blob:https://example.org/9115d58c-bcda-ff47-86e5-083e9a215304") === true,
-        1: URI.isBlob("blob:https://example.org/9115d58c-bcda-ff47-86e5-083e9a215304#hello") === true,
-        2: URI.isBlob("") === false,
-        3: URI.isBlob("blob:") === false,
-    };
-
-    if ( /false/.test(JSON.stringify(result)) ) {
-        test.done(miss());
-    } else {
-        test.done(pass());
-    }
-}
-
 function testURI_getDir(test, pass, miss) {
     var result = {
             1: URI.getDir("http://example.com/a/b/c.ext")           === "/a/b/",
@@ -647,6 +632,30 @@ function testURI_getExt(test, pass, miss) {
             3: URI.getExt("https://example.com/?a=1#foo")           === "",
             4: URI.getExt("https://example.com")                    === "",
         };
+
+    if ( /false/.test(JSON.stringify(result)) ) {
+        test.done(miss());
+    } else {
+        test.done(pass());
+    }
+}
+
+function testURI_getProtocol(test, pass, miss) {
+    var result = [
+        URI.getProtocol("blob:https://example.org/9115d58c-bcda-ff47-86e5-083e9a215304") === "blob:",
+        URI.getProtocol("blob:https://example.org/9115d58c-bcda-ff47-86e5-083e9a215304#hello") === "blob:",
+        URI.getProtocol("blob:") === "blob:",
+        URI.getProtocol("file:///dir/file.ext") === "file:",
+        URI.getProtocol("file://localhost/dir/file.ext") === "file:",
+        URI.getProtocol("file:") === "file:",
+        URI.getProtocol("http://example.com/dir/file.ext") === "http:",
+        URI.getProtocol("HTTPS://example.com/dir/file.ext") === "https:",
+        URI.getProtocol("http:") === "http:",
+        URI.getProtocol("ws://example.com/dir/file.ext") === "ws:",
+        URI.getProtocol("wss://example.com/dir/file.ext") === "wss:",
+        URI.getProtocol("ws:") === "ws:",
+        URI.getProtocol("") === "",
+    ];
 
     if ( /false/.test(JSON.stringify(result)) ) {
         test.done(miss());
