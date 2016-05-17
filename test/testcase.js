@@ -44,6 +44,18 @@ if (IN_BROWSER || IN_NW || IN_EL || IN_WORKER || IN_NODE) {
         testURI_getExt,
         testURI_getProtocol,
         testURI_isBlob,
+        // --- search params ---
+        testURISearchParams,
+        testURISearchParams_append,
+        testURISearchParams_delete,
+        testURISearchParams_entries,
+        testURISearchParams_get,
+        testURISearchParams_getAll,
+        testURISearchParams_has,
+        testURISearchParams_keys,
+        testURISearchParams_values,
+        testURISearchParams_set,
+        testURISearchParams_toString,
     ]);
 }
 
@@ -345,16 +357,19 @@ function testURI_isValid(test, pass, miss) {
 
 function testURI_parseAndBuild(test, pass, miss) {
 
-    var absurl = "http://example.com/dir/file.exe?key=value#hash";
-    var parsed = URI.parse(absurl);
-    var revert = URI.build(parsed);
+    var source = {
+        0: "http://example.com/dir/file.exe?key=value#hash",
+        1: "http://example.com/dir/file.exe?key=val%20ue#has%20h",
+    };
+    var result = {
+        0: URI.build(URI.parse(source["0"])) === source["0"],
+        1: URI.build(URI.parse(source["1"])) === source["1"],
+    };
 
-    var ok = revert === absurl; // URI.build
-
-    if (ok) {
-        test.done(pass());
-    } else {
+    if ( /false/.test(JSON.stringify(result)) ) {
         test.done(miss());
+    } else {
+        test.done(pass());
     }
 }
 
@@ -678,6 +693,173 @@ function testURI_isBlob(test, pass, miss) {
     }
 }
 
+function testURISearchParams(test, pass, miss) {
+    var source = {
+        0: "http://example.com/dir/file.exe?key=value&a=b&a=1#hash",
+        1: "http://example.com/dir/file.exe?key=val%20ue&a=b&a=1#has%20h",
+        2: "key=value&a=b&a=1",
+    };
+    var result = {
+        0: new URISearchParams(source[0]).toString() === "key=value&a=b&a=1",
+        1: new URISearchParams(source[1]).toString() === "key=val%20ue&a=b&a=1",
+        2: new URISearchParams(source[2]).toString() === "key=value&a=b&a=1",
+    };
+    if ( /false/.test(JSON.stringify(result)) ) {
+        test.done(miss());
+    } else {
+        test.done(pass());
+    }
+}
+
+function testURISearchParams_append(test, pass, miss) {
+    var source = new URISearchParams("key=value&a=b&a=1");
+
+    var result = {
+        0: source.toString() === "key=value&a=b&a=1",
+        1: (source.append("b", 2),source.toString()) === "key=value&a=b&a=1&b=2",
+    };
+
+    if ( /false/.test(JSON.stringify(result)) ) {
+        test.done(miss());
+    } else {
+        test.done(pass());
+    }
+}
+function testURISearchParams_delete(test, pass, miss) {
+    var source = new URISearchParams("key=value&a=b&a=1");
+
+    var result = {
+        0: source.toString() === "key=value&a=b&a=1",
+        1: (source.delete("a"),source.toString()) === "key=value",
+    };
+
+    if ( /false/.test(JSON.stringify(result)) ) {
+        test.done(miss());
+    } else {
+        test.done(pass());
+    }
+}
+function testURISearchParams_entries(test, pass, miss) {
+    var source = new URISearchParams("key=value&a=b&a=1");
+    var keys = [];
+    var values = [];
+
+    for (var keyValuePair of source.entries()) {
+        keys.push( keyValuePair[0] );
+        values.push ( keyValuePair[1] );
+    }
+
+    var result = {
+        0: keys.join() === "key,a,a",
+        1: values.join() === "value,b,1",
+    };
+
+    if ( /false/.test(JSON.stringify(result)) ) {
+        test.done(miss());
+    } else {
+        test.done(pass());
+    }
+}
+function testURISearchParams_get(test, pass, miss) {
+    var source = new URISearchParams("key=value&a=b&a=1");
+
+    var result = {
+        0: source.get("key") === "value",
+        1: source.get("a") === "b",
+    };
+
+    if ( /false/.test(JSON.stringify(result)) ) {
+        test.done(miss());
+    } else {
+        test.done(pass());
+    }
+}
+function testURISearchParams_getAll(test, pass, miss) {
+    var source = new URISearchParams("key=value&a=b&a=1");
+
+    var result = {
+        0: source.getAll("key").join() === ["value"].join(),
+        1: source.getAll("a").join()   === ["b", "1"].join(),
+    };
+
+    if ( /false/.test(JSON.stringify(result)) ) {
+        test.done(miss());
+    } else {
+        test.done(pass());
+    }
+}
+function testURISearchParams_has(test, pass, miss) {
+    var source = new URISearchParams("key=value&a=b&a=1");
+
+    var result = {
+        0: source.has("key") === true,
+        1: source.has("a")   === true,
+        2: source.has("404") === false,
+    };
+
+    if ( /false/.test(JSON.stringify(result)) ) {
+        test.done(miss());
+    } else {
+        test.done(pass());
+    }
+}
+function testURISearchParams_keys(test, pass, miss) {
+    var source = new URISearchParams("key=value&a=b&a=1");
+
+    var result = {
+        0: Array.from(source.keys()).join() === ["key","a","a"].join(),
+    };
+
+    if ( /false/.test(JSON.stringify(result)) ) {
+        test.done(miss());
+    } else {
+        test.done(pass());
+    }
+}
+function testURISearchParams_values(test, pass, miss) {
+    var source = new URISearchParams("key=value&a=b&a=1");
+
+    var result = {
+        0: Array.from(source.values()).join() === ["value","b","1"].join(),
+    };
+
+    if ( /false/.test(JSON.stringify(result)) ) {
+        test.done(miss());
+    } else {
+        test.done(pass());
+    }
+}
+function testURISearchParams_set(test, pass, miss) {
+    var source = new URISearchParams("key=value&a=b&a=1");
+
+    var result = {
+        0: (source.set("a", "29"), source.toString()) === "key=value&a=29",
+    };
+
+    if ( /false/.test(JSON.stringify(result)) ) {
+        test.done(miss());
+    } else {
+        test.done(pass());
+    }
+}
+
+function testURISearchParams_toString(test, pass, miss) {
+    var source = new URISearchParams("key=value&a=b&a=1");
+
+    for (var key of source.keys()) {
+        source.delete(key);
+    }
+
+    var result = {
+        0: source.toString() === "",
+    };
+
+    if ( /false/.test(JSON.stringify(result)) ) {
+        test.done(miss());
+    } else {
+        test.done(pass());
+    }
+}
 
 return test.run();
 

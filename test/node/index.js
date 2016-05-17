@@ -9,6 +9,7 @@ WebModule.PUBLISH = true;
 
 require("../wmtools.js");
 require("../../lib/URI.js");
+require("../../lib/URISearchParams.js");
 require("../../release/URI.n.min.js");
 require("../testcase.js");
 
