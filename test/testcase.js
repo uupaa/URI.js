@@ -44,6 +44,7 @@ if (IN_BROWSER || IN_NW || IN_EL || IN_WORKER || IN_NODE) {
         testURI_getExt,
         testURI_getProtocol,
         testURI_isBlob,
+        testURI_getBaseURL,
         // --- search params ---
         testURISearchParams,
         testURISearchParams_append,
@@ -684,6 +685,28 @@ function testURI_isBlob(test, pass, miss) {
         URI.isBlob("ws://example.com/dir/file.ext") === false,
         URI.isBlob("wss://example.com/dir/file.ext") === false,
         URI.isBlob("") === false,
+    ];
+
+    if ( /false/.test(JSON.stringify(result)) ) {
+        test.done(miss());
+    } else {
+        test.done(pass());
+    }
+}
+
+function testURI_getBaseURL(test, pass, miss) {
+    var result = [
+        URI.getBaseURL("http://example.com:8080/a/b/c.ext") === "http://example.com:8080/a/b/",
+        URI.getBaseURL("blob:http://example.com/a/b/c.ext") === "blob:http://example.com/a/b/",
+        URI.getBaseURL("blob:https://example.org/9115d58c-bcda-ff47-86e5-083e9a215304") === "blob:https://example.org/",
+        URI.getBaseURL("blob:https://example.org/9115d58c-bcda-ff47-86e5-083e9a215304#hello") === "blob:https://example.org/",
+        URI.getBaseURL("file:///dir/file.ext") === "file:///dir/",
+        URI.getBaseURL("file://localhost/dir/file.ext") === "file://localhost/dir/",
+        URI.getBaseURL("http://example.com/dir/file.ext") === "http://example.com/dir/",
+        URI.getBaseURL("HTTPS://example.com/dir/file.ext") === "https://example.com/dir/",
+        URI.getBaseURL("ws://example.com/dir/file.ext") === "ws://example.com/dir/",
+        URI.getBaseURL("wss://example.com/dir/file.ext") === "wss://example.com/dir/",
+        !!URI.getBaseURL(""), // get current base dir. eg: http://localhost:8000/URI.js/test/browser
     ];
 
     if ( /false/.test(JSON.stringify(result)) ) {
