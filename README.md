@@ -15,28 +15,31 @@ This module made of [WebModule](https://github.com/uupaa/WebModule).
 
 ```js
 <script src="<module-dir>/lib/WebModule.js"></script>
+<script src="<module-dir>/lib/URISearchParams.js"></script>
 <script src="<module-dir>/lib/URI.js"></script>
 <script>
 var urlObject = WebModule.URI("http://user:pass@example.com:8080/dir1/dir2/file.ext?a=b;c=d#hash");
 
 // urlObject = {
-//     href:       "http://user:pass@example.com:8080/dir1/dir2/file.ext?a=b;c=d#hash",
-//     protocol:   "http:",
-//     origin:     "http://example.com:8080",
-//     host:       "example.com:8080",
-//     hostname:   "example.com",
-//     port:       "8080",
-//     username:   "user",
-//     password:   "pass",
-//     pathname:   "/dir1/dir2/file.ext",
-//     search:     "?a=b;c=d",
-//     hash:       "#hash",
+//     href:         "http://user:pass@example.com:8080/dir1/dir2/file.ext?a=b;c=d#hash",
+//     preifx:       "",
+//     protocol:     "http:",
+//     origin:       "http://example.com:8080",
+//     host:         "example.com:8080",
+//     hostname:     "example.com",
+//     port:         "8080",
+//     username:     "user",
+//     password:     "pass",
+//     pathname:     "/dir1/dir2/file.ext",
+//     search:       "?a=b;c=d",
+//     hash:         "#hash",
 //     // --- extras properties ---
-//     scheme:     "http:",
-//     path:       "/dir1/dir2/file.ext?a=b;c=d",
-//     dir:        "/dir1/dir2/",                // [!] has last slash
-//     file:       "file.ext",
-//     fragment:   "#fragment"
+//     params:       new URISearchParams("a=b;c=d"),
+//     scheme:       "http:",
+//     path:         "/dir1/dir2/file.ext?a=b;c=d",
+//     dir:          "/dir1/dir2/",                // [!] has last slash
+//     file:         "file.ext",
+//     fragment:     "#fragment"
 // };
 
 </script>
@@ -46,6 +49,7 @@ var urlObject = WebModule.URI("http://user:pass@example.com:8080/dir1/dir2/file.
 
 ```js
 importScripts("<module-dir>lib/WebModule.js");
+importScripts("<module-dir>lib/URISearchParams.js");
 importScripts("<module-dir>lib/URI.js");
 
 ```
@@ -54,6 +58,7 @@ importScripts("<module-dir>lib/URI.js");
 
 ```js
 require("<module-dir>lib/WebModule.js");
+require("<module-dir>lib/URISearchParams.js");
 require("<module-dir>lib/URI.js");
 
 ```
