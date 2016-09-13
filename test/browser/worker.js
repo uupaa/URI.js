@@ -20,6 +20,7 @@ onmessage = function(event) {
 
     
     importScripts("../wmtools.js");
+    importScripts("../../lib/URISearchParams.js");
     importScripts("../../lib/URI.js");
     importScripts("../../release/URI.w.min.js");
     importScripts("../testcase.js");

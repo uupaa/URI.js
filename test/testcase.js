@@ -721,11 +721,15 @@ function testURISearchParams(test, pass, miss) {
         0: "http://example.com/dir/file.exe?key=value&a=b&a=1#hash",
         1: "http://example.com/dir/file.exe?key=val%20ue&a=b&a=1#has%20h",
         2: "key=value&a=b&a=1",
+        3: "key1&key2=&key3=3",
+        4: "key1=&key2=&key3=3",
     };
     var result = {
         0: new URISearchParams(source[0]).toString() === "key=value&a=b&a=1",
         1: new URISearchParams(source[1]).toString() === "key=val%20ue&a=b&a=1",
         2: new URISearchParams(source[2]).toString() === "key=value&a=b&a=1",
+        3: new URISearchParams(source[3]).toString() === "key1=&key2=&key3=3",
+        4: new URISearchParams(source[4]).toString() === "key1=&key2=&key3=3",
     };
     if ( /false/.test(JSON.stringify(result)) ) {
         test.done(miss());
