@@ -628,6 +628,7 @@ function testURI_getDir(test, pass, miss) {
         };
 
     if ( /false/.test(JSON.stringify(result)) ) {
+        testURI_getFileExt,
         test.done(miss());
     } else {
         test.done(pass());
@@ -640,6 +641,21 @@ function testURI_getExt(test, pass, miss) {
             2: URI.getExt("https://example.com/a/b/c.ext?a=1#foo")  === "ext",
             3: URI.getExt("https://example.com/?a=1#foo")           === "",
             4: URI.getExt("https://example.com")                    === "",
+        };
+
+    if ( /false/.test(JSON.stringify(result)) ) {
+        test.done(miss());
+    } else {
+        test.done(pass());
+    }
+}
+
+function testURI_getFileExt(test, pass, miss) {
+    var result = {
+            1: URI.getFileExt("http://example.com/a/b/c.ext")           === "c.ext",
+            2: URI.getFileExt("https://example.com/a/b/c.ext?a=1#foo")  === "c.ext",
+            3: URI.getFileExt("https://example.com/?a=1#foo")           === "",
+            4: URI.getFileExt("https://example.com")                    === "",
         };
 
     if ( /false/.test(JSON.stringify(result)) ) {
