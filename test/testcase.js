@@ -399,6 +399,7 @@ function testURI_isRelativeURL(test, pass, miss) {
             1: URI.isRelative("/dir/file.ext") === true,
             2: URI.isRelative("//example.com") === true,
             3: URI.isRelative("c:/example.com") === false,
+            4: URI.isRelative("http://example.com") === false,
         };
 
     if ( /false/.test(JSON.stringify(url)) ) {
